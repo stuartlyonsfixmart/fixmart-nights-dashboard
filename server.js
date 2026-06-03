@@ -69,10 +69,6 @@ function dateRange(q) {
   return { startDate: start.toISOString().slice(0, 10), endDate: end };
 }
 
-// pick_end_time and pack_end_time are STRING, some rows contain "NaT" (pandas null)
-// NULLIF converts "NaT" to NULL before PARSE_TIMESTAMP, SAFE_ prefix silently nulls any other bad values
-const TS = (col) => "SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', NULLIF(" + col + ", 'NaT'))";
-
 // PICKING
 app.get('/api/picking', async (req, res) => {
   const { startDate, endDate } = dateRange(req.query);
@@ -81,31 +77,36 @@ app.get('/api/picking', async (req, res) => {
   const cached = cache.get(cacheKey);
   if (cached) return res.json({ success: true, data: cached, cached: true });
 
-  const ts = TS('ph.pick_end_time');
   const shiftClause = shift === 'night'
-    ? 'AND (EXTRACT(HOUR FROM ' + ts + ') >= 20 OR EXTRACT(HOUR FROM ' + ts + ') < 6)'
+    ? 'AND (EXTRACT(HOUR FROM end_ts) >= 20 OR EXTRACT(HOUR FROM end_ts) < 6)'
     : shift === 'day'
-    ? 'AND EXTRACT(HOUR FROM ' + ts + ') >= 6 AND EXTRACT(HOUR FROM ' + ts + ') < 20'
+    ? 'AND EXTRACT(HOUR FROM end_ts) >= 6 AND EXTRACT(HOUR FROM end_ts) < 20'
     : '';
 
   const lines = [
-    'WITH pick_data AS (',
+    'WITH clean AS (',
+    '  SELECT ph.pick_id, ph.pick_total_weight, ph.pick_pic_id,',
+    "    SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', ph.pick_end_time) AS end_ts",
+    '  FROM `' + P + '.fixmart_bi.pick_header` ph',
+    '  WHERE ph.pick_end_time IS NOT NULL',
+    "    AND ph.pick_end_time NOT LIKE '%NaT%'",
+    '    AND LENGTH(ph.pick_end_time) > 10',
+    '),',
+    'pick_data AS (',
     '  SELECT',
     '    pi.pic_name AS picker_name,',
-    '    CASE WHEN EXTRACT(HOUR FROM ' + ts + ') >= 20 THEN DATE(' + ts + ')',
-    '         ELSE DATE_SUB(DATE(' + ts + '), INTERVAL 1 DAY) END AS shift_date,',
-    '    CASE WHEN EXTRACT(HOUR FROM ' + ts + ') >= 6 AND EXTRACT(HOUR FROM ' + ts + ') < 20 THEN "Day" ELSE "Night" END AS shift,',
-    '    ph.pick_id,',
-    '    ph.pick_total_weight,',
+    '    CASE WHEN EXTRACT(HOUR FROM c.end_ts) >= 20 THEN DATE(c.end_ts)',
+    '         ELSE DATE_SUB(DATE(c.end_ts), INTERVAL 1 DAY) END AS shift_date,',
+    '    CASE WHEN EXTRACT(HOUR FROM c.end_ts) >= 6 AND EXTRACT(HOUR FROM c.end_ts) < 20 THEN "Day" ELSE "Night" END AS shift,',
+    '    c.pick_id,',
+    '    c.pick_total_weight,',
     '    COUNT(pl.pickl_id) AS line_count,',
     '    COUNT(DISTINCT oli.oli_oh_id) AS order_count',
-    '  FROM `' + P + '.fixmart_bi.pick_header` ph',
-    '  JOIN `' + P + '.fixmart_bi.picker` pi ON pi.pic_id = ph.pick_pic_id',
-    '  LEFT JOIN `' + P + '.fixmart_bi.pick_lines` pl ON pl.pickl_pick_id = ph.pick_id',
+    '  FROM clean c',
+    '  JOIN `' + P + '.fixmart_bi.picker` pi ON pi.pic_id = c.pick_pic_id',
+    '  LEFT JOIN `' + P + '.fixmart_bi.pick_lines` pl ON pl.pickl_pick_id = c.pick_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.order_line_item` oli ON oli.oli_id = pl.pickl_oli_id',
-    '  WHERE ph.pick_end_time IS NOT NULL',
-    '    AND ph.pick_end_time != \'NaT\'',
-    '    AND DATE(' + ts + ') BETWEEN @startDate AND @endDate',
+    '  WHERE DATE(c.end_ts) BETWEEN @startDate AND @endDate',
     '    AND pi.pic_active = TRUE',
     '    AND pi.pic_name NOT IN ("Default picker", "Not Working")',
     shiftClause,
@@ -120,7 +121,6 @@ app.get('/api/picking', async (req, res) => {
     '  ROUND(SAFE_DIVIDE(SUM(order_count), COUNT(DISTINCT shift_date)), 1) AS orders_per_shift,',
     '  ROUND(SAFE_DIVIDE(SUM(pick_total_weight), COUNT(DISTINCT shift_date)), 1) AS weight_per_shift',
     'FROM pick_data',
-    'WHERE shift_date IS NOT NULL',
     'GROUP BY 1, 2',
     'ORDER BY total_lines DESC'
   ];
@@ -143,33 +143,38 @@ app.get('/api/packing', async (req, res) => {
   const cached = cache.get(cacheKey);
   if (cached) return res.json({ success: true, data: cached, cached: true });
 
-  const ts = TS('pack.pack_end_time');
   const shiftClause = shift === 'night'
-    ? 'AND (EXTRACT(HOUR FROM ' + ts + ') >= 20 OR EXTRACT(HOUR FROM ' + ts + ') < 6)'
+    ? 'AND (EXTRACT(HOUR FROM end_ts) >= 20 OR EXTRACT(HOUR FROM end_ts) < 6)'
     : shift === 'day'
-    ? 'AND EXTRACT(HOUR FROM ' + ts + ') >= 6 AND EXTRACT(HOUR FROM ' + ts + ') < 20'
+    ? 'AND EXTRACT(HOUR FROM end_ts) >= 6 AND EXTRACT(HOUR FROM end_ts) < 20'
     : '';
 
   const lines = [
-    'WITH pack_data AS (',
+    'WITH clean AS (',
+    '  SELECT pack.pack_id, pack.pack_pac_id,',
+    "    SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', pack.pack_end_time) AS end_ts",
+    '  FROM `' + P + '.fixmart_bi.pack_header` pack',
+    '  WHERE pack.pack_end_time IS NOT NULL',
+    "    AND pack.pack_end_time NOT LIKE '%NaT%'",
+    '    AND LENGTH(pack.pack_end_time) > 10',
+    '),',
+    'pack_data AS (',
     '  SELECT',
     '    pac.pac_name AS packer_name,',
-    '    CASE WHEN EXTRACT(HOUR FROM ' + ts + ') >= 20 THEN DATE(' + ts + ')',
-    '         ELSE DATE_SUB(DATE(' + ts + '), INTERVAL 1 DAY) END AS shift_date,',
-    '    CASE WHEN EXTRACT(HOUR FROM ' + ts + ') >= 6 AND EXTRACT(HOUR FROM ' + ts + ') < 20 THEN "Day" ELSE "Night" END AS shift,',
-    '    pack.pack_id,',
+    '    CASE WHEN EXTRACT(HOUR FROM c.end_ts) >= 20 THEN DATE(c.end_ts)',
+    '         ELSE DATE_SUB(DATE(c.end_ts), INTERVAL 1 DAY) END AS shift_date,',
+    '    CASE WHEN EXTRACT(HOUR FROM c.end_ts) >= 6 AND EXTRACT(HOUR FROM c.end_ts) < 20 THEN "Day" ELSE "Night" END AS shift,',
+    '    c.pack_id,',
     '    COUNT(pl.pl_id) AS line_count,',
     '    COUNT(DISTINCT oli.oli_oh_id) AS order_count,',
     '    SUM(ph.pick_total_weight) AS total_weight',
-    '  FROM `' + P + '.fixmart_bi.pack_header` pack',
-    '  JOIN `' + P + '.fixmart_bi.packer` pac ON pac.pac_id = pack.pack_pac_id',
-    '  LEFT JOIN `' + P + '.fixmart_bi.pack_line` pl ON pl.pl_pack_id = pack.pack_id',
+    '  FROM clean c',
+    '  JOIN `' + P + '.fixmart_bi.packer` pac ON pac.pac_id = c.pack_pac_id',
+    '  LEFT JOIN `' + P + '.fixmart_bi.pack_line` pl ON pl.pl_pack_id = c.pack_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_lines` pkl ON pkl.pickl_id = pl.pl_pickl_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_header` ph ON ph.pick_id = pkl.pickl_pick_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.order_line_item` oli ON oli.oli_id = pkl.pickl_oli_id',
-    '  WHERE pack.pack_end_time IS NOT NULL',
-    '    AND pack.pack_end_time != \'NaT\'',
-    '    AND DATE(' + ts + ') BETWEEN @startDate AND @endDate',
+    '  WHERE DATE(c.end_ts) BETWEEN @startDate AND @endDate',
     '    AND pac.pac_active = TRUE',
     '    AND pac.pac_name NOT IN ("Default packer", "Not Working")',
     shiftClause,
@@ -184,7 +189,6 @@ app.get('/api/packing', async (req, res) => {
     '  ROUND(SAFE_DIVIDE(SUM(order_count), COUNT(DISTINCT shift_date)), 1) AS orders_per_shift,',
     '  ROUND(SAFE_DIVIDE(SUM(total_weight), COUNT(DISTINCT shift_date)), 1) AS weight_per_shift',
     'FROM pack_data',
-    'WHERE shift_date IS NOT NULL',
     'GROUP BY 1, 2',
     'ORDER BY total_lines DESC'
   ];
