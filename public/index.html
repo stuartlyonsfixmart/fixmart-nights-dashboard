@@ -67,10 +67,11 @@
     <a href="/" class="nav-link active">Picking</a>
     <a href="/packing.html" class="nav-link">Packing</a>
     <a href="/goodsin.html" class="nav-link">Goods In</a>
+    <a href="/trends.html" class="nav-link">Trends</a>
   </nav>
   <div class="topbar-right"><a href="/logout" class="logout-btn">Sign Out</a></div>
 </div>
-<div class="controls">
+<div class="controls" id="globalControls">
   <span class="ctrl-label">Period</span>
   <div class="btn-group" id="periodBtns">
     <button data-days="7">7d</button><button data-days="14">14d</button><button data-days="31" class="active">31d</button>
@@ -90,8 +91,8 @@
   <div class="kpi-card"><div class="kpi-label">Total Lines</div><div class="kpi-value" id="kpiLines">--</div><div class="kpi-sub">picked</div></div>
   <div class="kpi-card"><div class="kpi-label">Total Orders</div><div class="kpi-value" id="kpiOrders">--</div><div class="kpi-sub">distinct</div></div>
   <div class="kpi-card"><div class="kpi-label">Total Weight</div><div class="kpi-value" id="kpiWeight">--</div><div class="kpi-sub">kg</div></div>
-  <div class="kpi-card"><div class="kpi-label">Night Lines</div><div class="kpi-value" id="kpiNightLines">--</div><div class="kpi-sub">this period</div></div>
-  <div class="kpi-card"><div class="kpi-label">Night Orders</div><div class="kpi-value" id="kpiNightOrders">--</div><div class="kpi-sub">this period</div></div>
+  <div class="kpi-card"><div class="kpi-label" id="lblShiftLines">Night Lines</div><div class="kpi-value" id="kpiNightLines">--</div><div class="kpi-sub" id="subShiftLines">this period</div></div>
+  <div class="kpi-card"><div class="kpi-label" id="lblShiftOrders">Night Orders</div><div class="kpi-value" id="kpiNightOrders">--</div><div class="kpi-sub" id="subShiftOrders">this period</div></div>
   <div class="kpi-card"><div class="kpi-label">Active Pickers</div><div class="kpi-value" id="kpiPickers">--</div><div class="kpi-sub">this period</div></div>
 </div>
 <div class="content">
@@ -106,12 +107,28 @@
 <script>
 let days=31,shift='all',cStart=null,cEnd=null,charts={};
 const fmt=n=>n==null?'--':Number(n).toLocaleString('en-GB',{maximumFractionDigits:1});
-document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;load();}));
-document.querySelectorAll('#shiftBtns button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#shiftBtns button').forEach(x=>x.classList.remove('active'));b.classList.add('active');shift=b.dataset.shift;load();}));
+
+function updateShiftLabels(){
+  const lbl=shift==='night'?'Night':shift==='day'?'Day':'All-Shift';
+  document.getElementById('lblShiftLines').textContent=lbl+' Lines';
+  document.getElementById('lblShiftOrders').textContent=lbl+' Orders';
+  document.getElementById('subShiftLines').textContent='this period';
+  document.getElementById('subShiftOrders').textContent='this period';
+}
+
+document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;load();
+}));
+document.querySelectorAll('#shiftBtns button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#shiftBtns button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');shift=b.dataset.shift;updateShiftLabels();load();
+}));
 function applyCustom(){const s=document.getElementById('startDate').value,e=document.getElementById('endDate').value;if(!s||!e)return;cStart=s;cEnd=e;document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));load();}
 function url(){return cStart&&cEnd?'/api/picking?startDate='+cStart+'&endDate='+cEnd+'&shift='+shift:'/api/picking?days='+days+'&shift='+shift;}
 async function load(){
   document.getElementById('tableWrap').innerHTML='<div class="loading">Loading picking data...</div>';
+  document.getElementById('errorBox').style.display='none';
   try{
     const j=await(await fetch(url())).json();
     if(!j.success)throw new Error(j.error);
@@ -119,13 +136,17 @@ async function load(){
   }catch(e){const b=document.getElementById('errorBox');b.textContent='Error: '+e.message;b.style.display='block';}
 }
 function render(rows){
-  let tL=0,tO=0,tW=0,nL=0,nO=0;const pks=new Set();
-  rows.forEach(r=>{tL+=+r.total_lines||0;tO+=+r.total_orders||0;tW+=+r.total_weight_kg||0;pks.add(r.picker_name);if(r.shift==='Night'){nL+=+r.total_lines||0;nO+=+r.total_orders||0;}});
+  let tL=0,tO=0,tW=0,sL=0,sO=0;const pks=new Set();
+  rows.forEach(r=>{
+    tL+=+r.total_lines||0;tO+=+r.total_orders||0;tW+=+r.total_weight_kg||0;pks.add(r.picker_name);
+    if(shift==='all'&&r.shift==='Night'){sL+=+r.total_lines||0;sO+=+r.total_orders||0;}
+    else if(shift!=='all'){sL+=+r.total_lines||0;sO+=+r.total_orders||0;}
+  });
   document.getElementById('kpiLines').textContent=fmt(tL);
   document.getElementById('kpiOrders').textContent=fmt(tO);
   document.getElementById('kpiWeight').textContent=fmt(Math.round(tW));
-  document.getElementById('kpiNightLines').textContent=fmt(nL);
-  document.getElementById('kpiNightOrders').textContent=fmt(nO);
+  document.getElementById('kpiNightLines').textContent=fmt(sL);
+  document.getElementById('kpiNightOrders').textContent=fmt(sO);
   document.getElementById('kpiPickers').textContent=pks.size;
   const by={};
   rows.forEach(r=>{if(!by[r.picker_name])by[r.picker_name]={};by[r.picker_name][r.shift==='Night'?'night':'day']=r;});

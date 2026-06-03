@@ -29,6 +29,7 @@
   .btn-group button.active{background:var(--navy);color:var(--white);border-color:var(--navy);}
   .date-input{font-family:'Barlow',sans-serif;font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:3px;background:var(--white);}
   .apply-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--lime);border:none;border-radius:3px;cursor:pointer;}
+  .shift-notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;padding:12px 24px;display:none;font-family:'Barlow',sans-serif;}
   .kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px 24px;}
   .kpi-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--lime);padding:16px 18px;}
   .kpi-card.alert{border-top-color:var(--red);}
@@ -61,6 +62,7 @@
     <a href="/" class="nav-link">Picking</a>
     <a href="/packing.html" class="nav-link">Packing</a>
     <a href="/goodsin.html" class="nav-link active">Goods In</a>
+    <a href="/trends.html" class="nav-link">Trends</a>
   </nav>
   <div class="topbar-right"><a href="/logout" class="logout-btn">Sign Out</a></div>
 </div>
@@ -74,7 +76,12 @@
   <span style="color:var(--muted);font-size:12px">to</span>
   <input type="date" class="date-input" id="endDate">
   <button class="apply-btn" onclick="applyCustom()">Apply</button>
+  <span class="ctrl-label" style="margin-left:8px">Shift</span>
+  <div class="btn-group" id="shiftBtns">
+    <button data-shift="all" class="active">All</button><button data-shift="night">Night</button><button data-shift="day">Day</button>
+  </div>
 </div>
+<div id="shiftNotice" class="shift-notice">Goods In is a day shift operation. Shift filter does not apply here - showing all goods received.</div>
 <div class="error-box" id="errorBox"></div>
 <div class="kpi-strip">
   <div class="kpi-card"><div class="kpi-label">Lines Received</div><div class="kpi-value" id="kpiLines">--</div><div class="kpi-sub">GRN lines</div></div>
@@ -95,6 +102,13 @@ const fmt=n=>n==null?'--':Number(n).toLocaleString('en-GB',{maximumFractionDigit
 const fmtDate=s=>{if(!s)return '--';return new Date(s).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
 const isOverdue=s=>s&&new Date(s)<new Date(new Date().toDateString());
 const isDueToday=s=>s&&new Date(s).toDateString()===new Date().toDateString();
+
+document.querySelectorAll('#shiftBtns button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#shiftBtns button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const s=b.dataset.shift;
+  document.getElementById('shiftNotice').style.display=(s!=='all')?'block':'none';
+}));
 document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;loadProductivity();}));
 function applyCustom(){const s=document.getElementById('startDate').value,e=document.getElementById('endDate').value;if(!s||!e)return;cStart=s;cEnd=e;document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));loadProductivity();}
 function url(){return cStart&&cEnd?'/api/goodsin?startDate='+cStart+'&endDate='+cEnd:'/api/goodsin?days='+days;}
@@ -123,14 +137,7 @@ async function loadOutstanding(){
     document.getElementById('kpiOverdue').textContent=overduePOs.size;
     document.getElementById('kpiOutstanding').textContent=fmt(totalOutstanding);
     let h='<table><thead><tr><th>PO</th><th>Supplier</th><th>SKU</th><th>Description</th><th class="num">Ordered</th><th class="num">Received</th><th class="num">Outstanding</th><th class="num">Weight kg</th><th>Required</th><th>Status</th></tr></thead><tbody>';
-    rows.forEach(r=>{
-      const od=isOverdue(r.required_date),dt=isDueToday(r.required_date);
-      const dc=od?'overdue':dt?'due-today':'';
-      h+='<tr><td>'+r.po_number+'</td><td>'+r.supplier+'</td><td>'+r.sku+'</td><td>'+r.description+'</td>';
-      h+='<td class="num">'+fmt(r.qty_ordered)+'</td><td class="num">'+fmt(r.qty_received)+'</td><td class="num">'+fmt(r.qty_outstanding)+'</td>';
-      h+='<td class="num">'+fmt(r.weight_outstanding_kg)+'</td><td class="'+dc+'">'+fmtDate(r.required_date)+'</td>';
-      h+='<td><span class="status-badge">'+r.status+'</span></td></tr>';
-    });
+    rows.forEach(r=>{const od=isOverdue(r.required_date),dt=isDueToday(r.required_date);const dc=od?'overdue':dt?'due-today':'';h+='<tr><td>'+r.po_number+'</td><td>'+r.supplier+'</td><td>'+r.sku+'</td><td>'+r.description+'</td><td class="num">'+fmt(r.qty_ordered)+'</td><td class="num">'+fmt(r.qty_received)+'</td><td class="num">'+fmt(r.qty_outstanding)+'</td><td class="num">'+fmt(r.weight_outstanding_kg)+'</td><td class="'+dc+'">'+fmtDate(r.required_date)+'</td><td><span class="status-badge">'+r.status+'</span></td></tr>';});
     document.getElementById('outstandingWrap').innerHTML=h+'</tbody></table>';
   }catch(e){document.getElementById('errorBox').textContent='Outstanding error: '+e.message;document.getElementById('errorBox').style.display='block';}
 }

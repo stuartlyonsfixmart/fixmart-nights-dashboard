@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixmart - Trends</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="/chart.min.js"></script>
+<style>
+  :root{--lime:#9ACD00;--lime-dark:#7aaa00;--navy:#1B365D;--black:#1a1a1a;--white:#fff;--offwhite:#f5f5f3;--border:#e0e0e0;--muted:#666;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Barlow',sans-serif;background:var(--offwhite);color:var(--black);}
+  .topbar{background:var(--black);height:52px;display:flex;align-items:center;padding:0 24px;gap:24px;}
+  .topbar-brand{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--white);text-transform:uppercase;letter-spacing:0.05em;}
+  .topbar-brand span{color:var(--lime);}
+  .topbar-nav{display:flex;gap:4px;margin-left:24px;}
+  .nav-link{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:6px 14px;border-radius:3px;transition:all 0.15s;}
+  .nav-link:hover{color:var(--white);background:rgba(255,255,255,0.08);}
+  .nav-link.active{color:var(--black);background:var(--lime);}
+  .topbar-right{margin-left:auto;}
+  .logout-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:5px 12px;border:1px solid #444;border-radius:3px;}
+  .controls{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .ctrl-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+  .btn-group{display:flex;}
+  .btn-group button{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--border);background:var(--white);cursor:pointer;color:var(--muted);transition:all 0.15s;}
+  .btn-group button:first-child{border-radius:3px 0 0 3px;}
+  .btn-group button:last-child{border-radius:0 3px 3px 0;}
+  .btn-group button:not(:first-child){border-left:none;}
+  .btn-group button.active{background:var(--navy);color:var(--white);border-color:var(--navy);}
+  .date-input{font-family:'Barlow',sans-serif;font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:3px;background:var(--white);}
+  .apply-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--lime);border:none;border-radius:3px;cursor:pointer;}
+  .content{padding:20px 24px 32px;}
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 16px;}
+  .section-title span{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px;text-transform:none;letter-spacing:0;}
+  .subtabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);}
+  .subtab{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:10px 20px;cursor:pointer;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;}
+  .subtab.active{color:var(--navy);border-bottom-color:var(--navy);}
+  .chart-panel{background:var(--white);border:1px solid var(--border);padding:20px;margin-bottom:16px;}
+  .chart-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  .chart-wrap{position:relative;height:300px;}
+  .chart-wrap-tall{position:relative;}
+  /* HEATMAP */
+  .heatmap-wrap{background:var(--white);border:1px solid var(--border);padding:20px;margin-bottom:16px;overflow-x:auto;}
+  .heatmap-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  .heatmap-grid{display:grid;gap:2px;}
+  .heatmap-cell{height:24px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;color:rgba(255,255,255,0.8);cursor:default;}
+  .heatmap-label{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;height:24px;padding-right:8px;}
+  .heatmap-date{font-family:'Barlow Condensed',sans-serif;font-size:9px;color:var(--muted);text-align:center;transform:rotate(-45deg);transform-origin:center;white-space:nowrap;}
+  /* SPARKLINE TABLE */
+  .table-wrap{background:var(--white);border:1px solid var(--border);overflow:auto;margin-bottom:24px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--offwhite);white-space:nowrap;}
+  th.num{text-align:right;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#fafafa;}
+  .sparkline-cell canvas{display:block;}
+  .loading{text-align:center;padding:60px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+  .error-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:16px 20px;font-size:13px;margin-bottom:16px;border-radius:3px;display:none;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-brand">Fixmart <span>Nights</span></div>
+  <nav class="topbar-nav">
+    <a href="/" class="nav-link">Picking</a>
+    <a href="/packing.html" class="nav-link">Packing</a>
+    <a href="/goodsin.html" class="nav-link">Goods In</a>
+    <a href="/trends.html" class="nav-link active">Trends</a>
+  </nav>
+  <div class="topbar-right"><a href="/logout" class="logout-btn">Sign Out</a></div>
+</div>
+<div class="controls">
+  <span class="ctrl-label">Period</span>
+  <div class="btn-group" id="periodBtns">
+    <button data-days="7">7d</button><button data-days="14">14d</button><button data-days="31" class="active">31d</button>
+  </div>
+  <span class="ctrl-label" style="margin-left:8px">Custom</span>
+  <input type="date" class="date-input" id="startDate">
+  <span style="color:var(--muted);font-size:12px">to</span>
+  <input type="date" class="date-input" id="endDate">
+  <button class="apply-btn" onclick="applyCustom()">Apply</button>
+  <span class="ctrl-label" style="margin-left:8px">Shift</span>
+  <div class="btn-group" id="shiftBtns">
+    <button data-shift="all" class="active">All</button><button data-shift="night">Night</button><button data-shift="day">Day</button>
+  </div>
+  <span class="ctrl-label" style="margin-left:8px">Metric</span>
+  <div class="btn-group" id="metricBtns">
+    <button data-metric="lines" class="active">Lines</button><button data-metric="orders">Orders</button><button data-metric="weight_kg">Weight</button>
+  </div>
+</div>
+<div class="content">
+  <div class="subtabs">
+    <button class="subtab active" data-sub="picking" onclick="setSub('picking')">Picking</button>
+    <button class="subtab" data-sub="packing" onclick="setSub('packing')">Packing</button>
+  </div>
+  <div class="error-box" id="errorBox"></div>
+  <div id="mainContent"><div class="loading">Loading trends...</div></div>
+</div>
+<script>
+let days=31,shift='all',metric='lines',sub='picking',cStart=null,cEnd=null;
+let allData=null;
+let dailyChart=null;
+let sparkCharts={};
+
+const fmt=n=>n==null?'--':Number(n).toLocaleString('en-GB',{maximumFractionDigits:1});
+const metricLabel={'lines':'Lines','orders':'Orders','weight_kg':'Weight (kg)'};
+
+document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;load();
+}));
+document.querySelectorAll('#shiftBtns button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#shiftBtns button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');shift=b.dataset.shift;load();
+}));
+document.querySelectorAll('#metricBtns button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#metricBtns button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');metric=b.dataset.metric;if(allData)render(allData);
+}));
+function setSub(s){sub=s;document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));document.querySelector('[data-sub="'+s+'"]').classList.add('active');load();}
+function applyCustom(){const s=document.getElementById('startDate').value,e=document.getElementById('endDate').value;if(!s||!e)return;cStart=s;cEnd=e;document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));load();}
+function apiUrl(){const ep=sub==='picking'?'/api/picking-trends':'/api/packing-trends';return cStart&&cEnd?ep+'?startDate='+cStart+'&endDate='+cEnd+'&shift='+shift:ep+'?days='+days+'&shift='+shift;}
+
+async function load(){
+  document.getElementById('mainContent').innerHTML='<div class="loading">Loading trends...</div>';
+  document.getElementById('errorBox').style.display='none';
+  allData=null;dailyChart=null;sparkCharts={};
+  try{
+    const j=await(await fetch(apiUrl())).json();
+    if(!j.success)throw new Error(j.error);
+    allData=j.data;
+    render(allData);
+  }catch(e){document.getElementById('errorBox').textContent='Error: '+e.message;document.getElementById('errorBox').style.display='block';document.getElementById('mainContent').innerHTML='';}
+}
+
+function render(rows){
+  // Collect all dates and people
+  const dateSet=new Set();const peopleSet=new Set();
+  rows.forEach(r=>{if(r.shift_date)dateSet.add(r.shift_date);peopleSet.add(r.person);});
+  const dates=[...dateSet].sort();
+  const people=[...peopleSet].sort();
+
+  // Build lookup: date -> person -> {lines,orders,weight_kg}
+  const lookup={};
+  rows.forEach(r=>{
+    if(!r.shift_date)return;
+    if(!lookup[r.shift_date])lookup[r.shift_date]={};
+    if(!lookup[r.shift_date][r.person])lookup[r.shift_date][r.person]={lines:0,orders:0,weight_kg:0};
+    lookup[r.shift_date][r.person].lines+=+r.lines||0;
+    lookup[r.shift_date][r.person].orders+=+r.orders||0;
+    lookup[r.shift_date][r.person].weight_kg+=+r.weight_kg||0;
+  });
+
+  // Daily totals for bar chart
+  const nightTotals={};
+  const dayTotals={};
+  rows.forEach(r=>{
+    if(!r.shift_date)return;
+    const v=+r[metric]||0;
+    if(r.shift==='Night'){nightTotals[r.shift_date]=(nightTotals[r.shift_date]||0)+v;}
+    else{dayTotals[r.shift_date]=(dayTotals[r.shift_date]||0)+v;}
+  });
+
+  // Person totals for sparkline table
+  const personTotals={};
+  people.forEach(p=>{
+    personTotals[p]={total:0,days:0,daily:[]};
+    dates.forEach(d=>{
+      const v=lookup[d]?.[p]?.[metric]||0;
+      personTotals[p].total+=v;
+      if(v>0)personTotals[p].days++;
+      personTotals[p].daily.push(v);
+    });
+  });
+  const sortedPeople=people.sort((a,b)=>personTotals[b].total-personTotals[a].total);
+
+  // Determine if we should aggregate to weekly (>45 days)
+  const dayCount=dates.length;
+  let displayDates=dates;
+  let displayNight=dates.map(d=>nightTotals[d]||0);
+  let displayDay=dates.map(d=>dayTotals[d]||0);
+  let heatDates=dates;
+
+  if(dayCount>45){
+    // Aggregate to weekly
+    const weeks={};
+    dates.forEach(d=>{
+      const dt=new Date(d);
+      const day=dt.getDay();
+      const diff=dt.getDate()-(day===0?6:day-1);
+      const mon=new Date(dt.setDate(diff)).toISOString().slice(0,10);
+      if(!weeks[mon])weeks[mon]={night:0,day:0};
+      weeks[mon].night+=(nightTotals[d]||0);
+      weeks[mon].day+=(dayTotals[d]||0);
+    });
+    displayDates=Object.keys(weeks).sort();
+    displayNight=displayDates.map(w=>weeks[w].night);
+    displayDay=displayDates.map(w=>weeks[w].day);
+    heatDates=displayDates;
+  }
+
+  // Short date labels
+  const shortDates=displayDates.map(d=>{
+    const dt=new Date(d+'T12:00:00');
+    return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  });
+
+  const mLabel=metricLabel[metric];
+  const personLabel=sub==='picking'?'Picker':'Packer';
+
+  let html='';
+
+  // 1. Daily totals bar chart
+  html+='<div class="chart-panel"><div class="chart-panel-title">Daily '+mLabel+' - Night vs Day</div><div class="chart-wrap"><canvas id="chartDaily"></canvas></div></div>';
+
+  // 2. Heatmap
+  html+='<div class="heatmap-wrap"><div class="heatmap-title">'+personLabel+' Daily '+mLabel+' Heatmap</div><div id="heatmapDiv"></div></div>';
+
+  // 3. Sparkline table
+  html+='<div class="section-title">'+personLabel+' Summary <span>total '+mLabel.toLowerCase()+', avg per day worked, trend</span></div>';
+  html+='<div class="table-wrap"><table><thead><tr><th>'+personLabel+'</th><th class="num">Total</th><th class="num">Avg/Day</th><th class="num">Days Worked</th><th>Trend</th></tr></thead><tbody>';
+  sortedPeople.forEach(p=>{
+    const pt=personTotals[p];
+    const avg=pt.days>0?Math.round(pt.total/pt.days):0;
+    html+='<tr><td>'+p+'</td><td class="num">'+fmt(pt.total)+'</td><td class="num">'+fmt(avg)+'</td><td class="num">'+pt.days+'</td><td class="sparkline-cell"><canvas id="spark_'+p.replace(/[^a-z0-9]/gi,'_')+'" width="120" height="32"></canvas></td></tr>';
+  });
+  html+='</tbody></table></div>';
+
+  document.getElementById('mainContent').innerHTML=html;
+
+  // Build daily chart
+  if(dailyChart)dailyChart.destroy();
+  dailyChart=new Chart(document.getElementById('chartDaily'),{
+    type:'bar',
+    data:{labels:shortDates,datasets:[
+      {label:'Night',data:displayNight,backgroundColor:'#1B365D'},
+      {label:'Day',data:displayDay,backgroundColor:'#9ACD00'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{family:'Barlow',size:11},boxWidth:10}}},
+      scales:{
+        x:{stacked:true,grid:{display:false},ticks:{font:{family:'Barlow',size:9},maxRotation:45}},
+        y:{stacked:true,grid:{color:'#f0f0f0'},border:{display:false},ticks:{font:{family:'Barlow',size:10}}}
+      }
+    }
+  });
+
+  // Build heatmap
+  const maxVal=Math.max(...sortedPeople.flatMap(p=>heatDates.map(d=>lookup[d]?.[p]?.[metric]||0)));
+  const cols=heatDates.length;
+  const cellW=Math.max(20,Math.min(40,Math.floor((window.innerWidth-320)/cols)));
+  const labelW=120;
+
+  let hmHtml='<div style="display:grid;grid-template-columns:'+labelW+'px repeat('+cols+','+cellW+'px);gap:2px;min-width:'+(labelW+cols*(cellW+2))+'px">';
+  // Header row - dates
+  hmHtml+='<div></div>';
+  heatDates.forEach(d=>{
+    const dt=new Date(d+'T12:00:00');
+    const lbl=dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+    hmHtml+='<div style="height:40px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px"><span style="font-family:Barlow Condensed,sans-serif;font-size:9px;color:#999;writing-mode:vertical-rl;transform:rotate(180deg)">'+lbl+'</span></div>';
+  });
+  // Data rows
+  sortedPeople.forEach(p=>{
+    hmHtml+='<div style="font-family:Barlow,sans-serif;font-size:11px;color:#666;display:flex;align-items:center;height:24px;padding-right:8px;overflow:hidden;white-space:nowrap">'+p+'</div>';
+    heatDates.forEach(d=>{
+      const v=lookup[d]?.[p]?.[metric]||0;
+      const intensity=maxVal>0?v/maxVal:0;
+      const alpha=v===0?0:0.1+intensity*0.9;
+      const bg=v===0?'#f5f5f3':'rgba(27,54,93,'+alpha.toFixed(2)+')';
+      const txtCol=intensity>0.5?'rgba(255,255,255,0.9)':'transparent';
+      const title=p+' '+d+': '+fmt(v)+' '+metric;
+      hmHtml+='<div style="height:24px;border-radius:2px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:9px;font-family:Barlow Condensed,sans-serif;font-weight:700;color:'+txtCol+'" title="'+title+'">'+(v>0&&cellW>25?fmt(v):'')+'</div>';
+    });
+  });
+  hmHtml+='</div>';
+  document.getElementById('heatmapDiv').innerHTML=hmHtml;
+
+  // Build sparklines
+  sortedPeople.forEach(p=>{
+    const canvasId='spark_'+p.replace(/[^a-z0-9]/gi,'_');
+    const canvas=document.getElementById(canvasId);
+    if(!canvas)return;
+    const vals=personTotals[p].daily;
+    if(sparkCharts[canvasId])sparkCharts[canvasId].destroy();
+    sparkCharts[canvasId]=new Chart(canvas,{
+      type:'bar',
+      data:{labels:dates,datasets:[{data:vals,backgroundColor:'#1B365D',borderWidth:0}]},
+      options:{responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}},
+        scales:{x:{display:false},y:{display:false,beginAtZero:true}}}
+    });
+  });
+}
+
+const now=new Date(),e=now.toISOString().slice(0,10),s=new Date(now);s.setDate(s.getDate()-31);
+document.getElementById('endDate').value=e;document.getElementById('startDate').value=s.toISOString().slice(0,10);
+load();
+</script>
+</body>
+</html>
