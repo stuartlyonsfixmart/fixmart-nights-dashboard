@@ -75,9 +75,6 @@ function shiftFilter(shift, tsCol) {
 }
 
 // SHIFT CLASSIFICATION
-// Fixed 90-day lookback regardless of display date range.
-// Night = >=85% of picks/packs fall in 20:00-06:00 window.
-// Day = >=85% fall in 06:00-20:00. Both = neither threshold met.
 app.get('/api/shift-classification', async (req, res) => {
   const type = req.query.type || 'picking';
   const cacheKey = 'shift_class_' + type;
@@ -85,7 +82,6 @@ app.get('/api/shift-classification', async (req, res) => {
   if (cached) return res.json({ success: true, data: cached, cached: true });
 
   const now = new Date();
-  const endDate = now.toISOString().slice(0, 10);
   const start = new Date(now);
   start.setDate(start.getDate() - 90);
   const startDate = start.toISOString().slice(0, 10);
@@ -109,22 +105,17 @@ app.get('/api/shift-classification', async (req, res) => {
       '    COUNT(*) AS total',
       '  FROM clean c',
       '  JOIN `' + P + '.fixmart_bi.picker` pi ON pi.pic_id = c.pick_pic_id',
-      '  WHERE c.end_ts IS NOT NULL',
-      '    AND pi.pic_active = TRUE',
+      '  WHERE c.end_ts IS NOT NULL AND pi.pic_active = TRUE',
       '    AND pi.pic_name NOT IN ("Default picker", "Not Working")',
       '  GROUP BY 1',
       ')',
-      'SELECT person,',
-      '  night_count, day_count, total,',
+      'SELECT person, night_count, day_count, total,',
       '  ROUND(SAFE_DIVIDE(night_count, total) * 100, 1) AS pct_night,',
       '  ROUND(SAFE_DIVIDE(day_count, total) * 100, 1) AS pct_day,',
-      '  CASE',
-      '    WHEN SAFE_DIVIDE(night_count, total) >= 0.85 THEN "Night"',
-      '    WHEN SAFE_DIVIDE(day_count, total) >= 0.85 THEN "Day"',
-      '    ELSE "Both"',
-      '  END AS classification',
-      'FROM counts',
-      'ORDER BY person'
+      '  CASE WHEN SAFE_DIVIDE(night_count, total) >= 0.85 THEN "Night"',
+      '       WHEN SAFE_DIVIDE(day_count, total) >= 0.85 THEN "Day"',
+      '       ELSE "Both" END AS classification',
+      'FROM counts ORDER BY person'
     ].join('\n');
   } else {
     query = [
@@ -135,39 +126,24 @@ app.get('/api/shift-classification', async (req, res) => {
       '    COUNT(*) AS total',
       '  FROM `' + P + '.fixmart_bi.pack_header` pack',
       '  JOIN `' + P + '.fixmart_bi.packer` pac ON pac.pac_id = pack.pack_pac_id',
-      '  WHERE pack.pack_end_time IS NOT NULL',
-      '    AND DATE(pack.pack_end_time) >= @startDate',
-      '    AND pac.pac_active = TRUE',
-      '    AND pac.pac_name NOT IN ("Default packer", "Not Working")',
+      '  WHERE pack.pack_end_time IS NOT NULL AND DATE(pack.pack_end_time) >= @startDate',
+      '    AND pac.pac_active = TRUE AND pac.pac_name NOT IN ("Default packer", "Not Working")',
       '  GROUP BY 1',
       ')',
-      'SELECT person,',
-      '  night_count, day_count, total,',
+      'SELECT person, night_count, day_count, total,',
       '  ROUND(SAFE_DIVIDE(night_count, total) * 100, 1) AS pct_night,',
       '  ROUND(SAFE_DIVIDE(day_count, total) * 100, 1) AS pct_day,',
-      '  CASE',
-      '    WHEN SAFE_DIVIDE(night_count, total) >= 0.85 THEN "Night"',
-      '    WHEN SAFE_DIVIDE(day_count, total) >= 0.85 THEN "Day"',
-      '    ELSE "Both"',
-      '  END AS classification',
-      'FROM counts',
-      'ORDER BY person'
+      '  CASE WHEN SAFE_DIVIDE(night_count, total) >= 0.85 THEN "Night"',
+      '       WHEN SAFE_DIVIDE(day_count, total) >= 0.85 THEN "Day"',
+      '       ELSE "Both" END AS classification',
+      'FROM counts ORDER BY person'
     ].join('\n');
   }
 
   try {
     const [rows] = await bigquery.query({ query, params: { startDate }, location: LOC });
-    const result = rows.map(r => ({
-      person: r.person,
-      night_count: r.night_count,
-      day_count: r.day_count,
-      total: r.total,
-      pct_night: r.pct_night,
-      pct_day: r.pct_day,
-      classification: r.classification
-    }));
-    cache.set(cacheKey, result);
-    res.json({ success: true, data: result, cached: false });
+    cache.set(cacheKey, rows.map(r => ({ person: r.person, night_count: r.night_count, day_count: r.day_count, total: r.total, pct_night: r.pct_night, pct_day: r.pct_day, classification: r.classification })));
+    res.json({ success: true, data: cache.get(cacheKey), cached: false });
   } catch (err) {
     console.error('Classification error:', err);
     res.status(500).json({ success: false, error: err.message });
@@ -192,8 +168,7 @@ app.get('/api/picking', async (req, res) => {
     '    AND LENGTH(ph.pick_end_time) > 10',
     '),',
     'pick_data AS (',
-    '  SELECT',
-    '    pi.pic_name AS picker_name,',
+    '  SELECT pi.pic_name AS picker_name,',
     '    CASE WHEN EXTRACT(HOUR FROM c.end_ts) >= 20 THEN DATE(c.end_ts)',
     '         ELSE DATE_SUB(DATE(c.end_ts), INTERVAL 1 DAY) END AS shift_date,',
     '    CASE WHEN EXTRACT(HOUR FROM c.end_ts) >= 6 AND EXTRACT(HOUR FROM c.end_ts) < 20 THEN "Day" ELSE "Night" END AS shift,',
@@ -204,24 +179,19 @@ app.get('/api/picking', async (req, res) => {
     '  JOIN `' + P + '.fixmart_bi.picker` pi ON pi.pic_id = c.pick_pic_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_lines` pl ON pl.pickl_pick_id = c.pick_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.order_line_item` oli ON oli.oli_id = pl.pickl_oli_id',
-    '  WHERE c.end_ts IS NOT NULL',
-    '    AND DATE(c.end_ts) BETWEEN @startDate AND @endDate',
-    '    AND pi.pic_active = TRUE',
-    '    AND pi.pic_name NOT IN ("Default picker", "Not Working")',
+    '  WHERE c.end_ts IS NOT NULL AND DATE(c.end_ts) BETWEEN @startDate AND @endDate',
+    '    AND pi.pic_active = TRUE AND pi.pic_name NOT IN ("Default picker", "Not Working")',
     shiftFilter(shift, 'c.end_ts'),
     '  GROUP BY 1, 2, 3, 4, 5',
     ')',
     'SELECT picker_name, shift,',
     '  COUNT(DISTINCT shift_date) AS shift_days,',
-    '  SUM(line_count) AS total_lines,',
-    '  SUM(order_count) AS total_orders,',
+    '  SUM(line_count) AS total_lines, SUM(order_count) AS total_orders,',
     '  ROUND(SUM(pick_total_weight), 1) AS total_weight_kg,',
     '  ROUND(SAFE_DIVIDE(SUM(line_count), COUNT(DISTINCT shift_date)), 1) AS lines_per_shift,',
     '  ROUND(SAFE_DIVIDE(SUM(order_count), COUNT(DISTINCT shift_date)), 1) AS orders_per_shift,',
     '  ROUND(SAFE_DIVIDE(SUM(pick_total_weight), COUNT(DISTINCT shift_date)), 1) AS weight_per_shift',
-    'FROM pick_data',
-    'GROUP BY 1, 2',
-    'ORDER BY total_lines DESC'
+    'FROM pick_data GROUP BY 1, 2 ORDER BY total_lines DESC'
   ];
 
   try {
@@ -244,8 +214,7 @@ app.get('/api/packing', async (req, res) => {
 
   const lines = [
     'WITH pack_data AS (',
-    '  SELECT',
-    '    pac.pac_name AS packer_name,',
+    '  SELECT pac.pac_name AS packer_name,',
     '    CASE WHEN EXTRACT(HOUR FROM pack.pack_end_time) >= 20 THEN DATE(pack.pack_end_time)',
     '         ELSE DATE_SUB(DATE(pack.pack_end_time), INTERVAL 1 DAY) END AS shift_date,',
     '    CASE WHEN EXTRACT(HOUR FROM pack.pack_end_time) >= 6 AND EXTRACT(HOUR FROM pack.pack_end_time) < 20 THEN "Day" ELSE "Night" END AS shift,',
@@ -259,24 +228,19 @@ app.get('/api/packing', async (req, res) => {
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_lines` pkl ON pkl.pickl_id = pl.pl_pickl_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_header` ph ON ph.pick_id = pkl.pickl_pick_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.order_line_item` oli ON oli.oli_id = pkl.pickl_oli_id',
-    '  WHERE pack.pack_end_time IS NOT NULL',
-    '    AND DATE(pack.pack_end_time) BETWEEN @startDate AND @endDate',
-    '    AND pac.pac_active = TRUE',
-    '    AND pac.pac_name NOT IN ("Default packer", "Not Working")',
+    '  WHERE pack.pack_end_time IS NOT NULL AND DATE(pack.pack_end_time) BETWEEN @startDate AND @endDate',
+    '    AND pac.pac_active = TRUE AND pac.pac_name NOT IN ("Default packer", "Not Working")',
     shiftFilter(shift, 'pack.pack_end_time'),
     '  GROUP BY 1, 2, 3, 4',
     ')',
     'SELECT packer_name, shift,',
     '  COUNT(DISTINCT shift_date) AS shift_days,',
-    '  SUM(line_count) AS total_lines,',
-    '  SUM(order_count) AS total_orders,',
+    '  SUM(line_count) AS total_lines, SUM(order_count) AS total_orders,',
     '  ROUND(SUM(total_weight), 1) AS total_weight_kg,',
     '  ROUND(SAFE_DIVIDE(SUM(line_count), COUNT(DISTINCT shift_date)), 1) AS lines_per_shift,',
     '  ROUND(SAFE_DIVIDE(SUM(order_count), COUNT(DISTINCT shift_date)), 1) AS orders_per_shift,',
     '  ROUND(SAFE_DIVIDE(SUM(total_weight), COUNT(DISTINCT shift_date)), 1) AS weight_per_shift',
-    'FROM pack_data',
-    'GROUP BY 1, 2',
-    'ORDER BY total_lines DESC'
+    'FROM pack_data GROUP BY 1, 2 ORDER BY total_lines DESC'
   ];
 
   try {
@@ -307,8 +271,7 @@ app.get('/api/picking-trends', async (req, res) => {
     '    AND LENGTH(ph.pick_end_time) > 10',
     '),',
     'daily AS (',
-    '  SELECT',
-    '    pi.pic_name AS person,',
+    '  SELECT pi.pic_name AS person,',
     '    CASE WHEN EXTRACT(HOUR FROM c.end_ts) >= 20 THEN DATE(c.end_ts)',
     '         ELSE DATE_SUB(DATE(c.end_ts), INTERVAL 1 DAY) END AS shift_date,',
     '    CASE WHEN EXTRACT(HOUR FROM c.end_ts) >= 6 AND EXTRACT(HOUR FROM c.end_ts) < 20 THEN "Day" ELSE "Night" END AS shift,',
@@ -319,10 +282,8 @@ app.get('/api/picking-trends', async (req, res) => {
     '  JOIN `' + P + '.fixmart_bi.picker` pi ON pi.pic_id = c.pick_pic_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_lines` pl ON pl.pickl_pick_id = c.pick_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.order_line_item` oli ON oli.oli_id = pl.pickl_oli_id',
-    '  WHERE c.end_ts IS NOT NULL',
-    '    AND DATE(c.end_ts) BETWEEN @startDate AND @endDate',
-    '    AND pi.pic_active = TRUE',
-    '    AND pi.pic_name NOT IN ("Default picker", "Not Working")',
+    '  WHERE c.end_ts IS NOT NULL AND DATE(c.end_ts) BETWEEN @startDate AND @endDate',
+    '    AND pi.pic_active = TRUE AND pi.pic_name NOT IN ("Default picker", "Not Working")',
     shiftFilter(shift, 'c.end_ts'),
     '  GROUP BY 1, 2, 3',
     ')',
@@ -332,13 +293,8 @@ app.get('/api/picking-trends', async (req, res) => {
 
   try {
     const [rows] = await bigquery.query({ query: lines.join('\n'), params: { startDate, endDate }, location: LOC });
-    const serialised = rows.map(r => ({
-      person: r.person,
-      shift_date: r.shift_date ? (r.shift_date.value || String(r.shift_date)).slice(0, 10) : null,
-      shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg
-    }));
-    cache.set(cacheKey, serialised);
-    res.json({ success: true, data: serialised, cached: false });
+    cache.set(cacheKey, rows.map(r => ({ person: r.person, shift_date: r.shift_date ? (r.shift_date.value || String(r.shift_date)).slice(0, 10) : null, shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg })));
+    res.json({ success: true, data: cache.get(cacheKey), cached: false });
   } catch (err) {
     console.error('Picking trends error:', err);
     res.status(500).json({ success: false, error: err.message });
@@ -355,8 +311,7 @@ app.get('/api/packing-trends', async (req, res) => {
 
   const lines = [
     'WITH daily AS (',
-    '  SELECT',
-    '    pac.pac_name AS person,',
+    '  SELECT pac.pac_name AS person,',
     '    CASE WHEN EXTRACT(HOUR FROM pack.pack_end_time) >= 20 THEN DATE(pack.pack_end_time)',
     '         ELSE DATE_SUB(DATE(pack.pack_end_time), INTERVAL 1 DAY) END AS shift_date,',
     '    CASE WHEN EXTRACT(HOUR FROM pack.pack_end_time) >= 6 AND EXTRACT(HOUR FROM pack.pack_end_time) < 20 THEN "Day" ELSE "Night" END AS shift,',
@@ -369,10 +324,8 @@ app.get('/api/packing-trends', async (req, res) => {
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_lines` pkl ON pkl.pickl_id = pl.pl_pickl_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_header` ph ON ph.pick_id = pkl.pickl_pick_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.order_line_item` oli ON oli.oli_id = pkl.pickl_oli_id',
-    '  WHERE pack.pack_end_time IS NOT NULL',
-    '    AND DATE(pack.pack_end_time) BETWEEN @startDate AND @endDate',
-    '    AND pac.pac_active = TRUE',
-    '    AND pac.pac_name NOT IN ("Default packer", "Not Working")',
+    '  WHERE pack.pack_end_time IS NOT NULL AND DATE(pack.pack_end_time) BETWEEN @startDate AND @endDate',
+    '    AND pac.pac_active = TRUE AND pac.pac_name NOT IN ("Default packer", "Not Working")',
     shiftFilter(shift, 'pack.pack_end_time'),
     '  GROUP BY 1, 2, 3',
     ')',
@@ -382,13 +335,8 @@ app.get('/api/packing-trends', async (req, res) => {
 
   try {
     const [rows] = await bigquery.query({ query: lines.join('\n'), params: { startDate, endDate }, location: LOC });
-    const serialised = rows.map(r => ({
-      person: r.person,
-      shift_date: r.shift_date ? (r.shift_date.value || String(r.shift_date)).slice(0, 10) : null,
-      shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg
-    }));
-    cache.set(cacheKey, serialised);
-    res.json({ success: true, data: serialised, cached: false });
+    cache.set(cacheKey, rows.map(r => ({ person: r.person, shift_date: r.shift_date ? (r.shift_date.value || String(r.shift_date)).slice(0, 10) : null, shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg })));
+    res.json({ success: true, data: cache.get(cacheKey), cached: false });
   } catch (err) {
     console.error('Packing trends error:', err);
     res.status(500).json({ success: false, error: err.message });
@@ -402,15 +350,18 @@ app.get('/api/goodsin', async (req, res) => {
   const cached = cache.get(cacheKey);
   if (cached) return res.json({ success: true, data: cached, cached: true });
 
+  // HeaderIncomingStockFlag may be stored as 1/true/'true' - use HeaderTransactionTypeCode = 'GRN' as safer filter
   const query = [
     'SELECT im.UserName AS operative, DATE(im.vth_transaction_datetime) AS grn_date,',
-    '  COUNT(*) AS lines_received, SUM(im.Quantity) AS units_received,',
-    '  ROUND(SUM(im.Quantity * COALESCE(vd.vad_weight, 0)), 1) AS weight_kg',
+    '  COUNT(*) AS lines_received, SUM(ABS(im.Quantity)) AS units_received,',
+    '  ROUND(SUM(ABS(im.Quantity) * COALESCE(vd.vad_weight, 0)), 1) AS weight_kg',
     'FROM `' + P + '.fixmart_bi.inventory_movements` im',
     'LEFT JOIN `' + P + '.fixmart_bi.variant_detail` vd ON vd.vad_id = im.VariantID',
-    'WHERE im.HeaderIncomingStockFlag = TRUE AND im.GRN_ID IS NOT NULL',
+    'WHERE im.GRN_ID IS NOT NULL',
+    '  AND im.HeaderIncomingStockFlag = TRUE',
     '  AND DATE(im.vth_transaction_datetime) BETWEEN @startDate AND @endDate',
     '  AND im.UserName IS NOT NULL',
+    '  AND im.UserName NOT IN ("Goods In", "Default")',
     'GROUP BY 1, 2 ORDER BY grn_date DESC, lines_received DESC'
   ].join('\n');
 
@@ -425,37 +376,48 @@ app.get('/api/goodsin', async (req, res) => {
 });
 
 // GOODS IN OUTSTANDING
+// pos_status codes: W=Waiting for goods, R=Awaiting response, P=Partially received
+// Excluded: F=Fully received, X=Cancelled, C=Complete, A=Awaiting conversion
 app.get('/api/goodsin-outstanding', async (req, res) => {
   const cacheKey = 'goodsin_outstanding';
   const cached = cache.get(cacheKey);
   if (cached) return res.json({ success: true, data: cached, cached: true });
 
   const query = [
-    'SELECT poh.poh_order_number AS po_number, cd.cd_name AS supplier,',
-    '  poh.poh_required_date AS required_date, poh.poh_promised_date AS promised_date,',
-    '  poh.pos_status AS status, vd.vad_variant_code AS sku,',
+    'SELECT',
+    '  poh.poh_order_number AS po_number,',
+    '  COALESCE(sd.sd_name, \'Unknown\') AS supplier,',
+    '  poh.poh_required_date AS required_date,',
+    '  poh.poh_promised_date AS promised_date,',
+    '  poh.pos_description AS status,',
+    '  vd.vad_variant_code AS sku,',
     '  pol.pol_vad_description AS description,',
-    '  pol.pol_qty_ordered AS qty_ordered, pol.pol_qty_received AS qty_received,',
+    '  pol.pol_qty_ordered AS qty_ordered,',
+    '  pol.pol_qty_received AS qty_received,',
     '  (pol.pol_qty_ordered - pol.pol_qty_received) AS qty_outstanding,',
     '  ROUND((pol.pol_qty_ordered - pol.pol_qty_received) * COALESCE(vd.vad_weight, 0), 1) AS weight_outstanding_kg,',
     '  ROUND((pol.pol_qty_ordered - pol.pol_qty_received) * pol.pol_item_net, 2) AS value_outstanding',
     'FROM `' + P + '.fixmart_bi.purchase_order_header` poh',
     'JOIN `' + P + '.fixmart_bi.purchase_order_lines` pol ON pol.pol_poh_id = poh.poh_id',
     'LEFT JOIN `' + P + '.fixmart_bi.variant_detail` vd ON vd.vad_id = pol.pol_vad_id',
-    'LEFT JOIN `' + P + '.fixmart_bi.customer_detail` cd ON cd.cd_id = poh.poh_cd_id',
+    'LEFT JOIN `' + P + '.fixmart_bi.supply_detail` sd ON sd.sd_id = poh.poh_sd_id',
     'WHERE pol.pol_qty_ordered > pol.pol_qty_received',
-    "  AND poh.pos_status NOT IN ('Complete', 'Cancelled')",
+    "  AND poh.pos_status IN ('W', 'R', 'P')",
     'ORDER BY poh.poh_required_date ASC, poh.poh_order_number'
   ].join('\n');
 
   try {
     const [rows] = await bigquery.query({ query, location: LOC });
     const serialised = rows.map(r => ({
-      po_number: r.po_number, supplier: r.supplier || 'Unknown',
+      po_number: r.po_number,
+      supplier: r.supplier || 'Unknown',
       required_date: r.required_date ? (r.required_date.value || String(r.required_date)).slice(0, 10) : null,
       promised_date: r.promised_date ? (r.promised_date.value || String(r.promised_date)).slice(0, 10) : null,
-      status: r.status, sku: r.sku, description: r.description,
-      qty_ordered: r.qty_ordered, qty_received: r.qty_received,
+      status: r.status,
+      sku: r.sku,
+      description: r.description,
+      qty_ordered: r.qty_ordered,
+      qty_received: r.qty_received,
       qty_outstanding: r.qty_outstanding,
       weight_outstanding_kg: r.weight_outstanding_kg,
       value_outstanding: r.value_outstanding
