@@ -6,15 +6,16 @@
 <title>Fixmart - Goods In</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="/chart.min.js"></script>
 <style>
-  :root{--lime:#9ACD00;--lime-dark:#7aaa00;--navy:#1B365D;--black:#1a1a1a;--white:#fff;--offwhite:#f5f5f3;--border:#e0e0e0;--muted:#666;--red:#dc2626;--amber:#d97706;}
+  :root{--lime:#9ACD00;--navy:#1B365D;--black:#1a1a1a;--white:#fff;--offwhite:#f5f5f3;--border:#e0e0e0;--muted:#666;--red:#dc2626;--amber:#d97706;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'Barlow',sans-serif;background:var(--offwhite);color:var(--black);}
   .topbar{background:var(--black);height:52px;display:flex;align-items:center;padding:0 24px;gap:24px;}
   .topbar-brand{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--white);text-transform:uppercase;letter-spacing:0.05em;}
   .topbar-brand span{color:var(--lime);}
   .topbar-nav{display:flex;gap:4px;margin-left:24px;}
-  .nav-link{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:6px 14px;border-radius:3px;transition:all 0.15s;}
+  .nav-link{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:6px 14px;border-radius:3px;}
   .nav-link:hover{color:var(--white);background:rgba(255,255,255,0.08);}
   .nav-link.active{color:var(--black);background:var(--lime);}
   .topbar-right{margin-left:auto;}
@@ -27,32 +28,49 @@
   .btn-group button:last-child{border-radius:0 3px 3px 0;}
   .btn-group button:not(:first-child){border-left:none;}
   .btn-group button.active{background:var(--navy);color:var(--white);border-color:var(--navy);}
-  .date-input{font-family:'Barlow',sans-serif;font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:3px;background:var(--white);}
+  .date-input{font-family:'Barlow',sans-serif;font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:3px;}
   .apply-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--lime);border:none;border-radius:3px;cursor:pointer;}
-  .shift-notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;padding:12px 24px;display:none;font-family:'Barlow',sans-serif;}
-  .kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px 24px;}
-  .kpi-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--lime);padding:16px 18px;}
+  .shift-notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;padding:12px 24px;display:none;}
+  /* KPI STRIP */
+  .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:20px 24px 0;}
+  .kpi-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--lime);padding:14px 16px;}
   .kpi-card.alert{border-top-color:var(--red);}
   .kpi-card.amber{border-top-color:var(--amber);}
+  .kpi-card.navy{border-top-color:var(--navy);}
   .kpi-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;line-height:1;}
+  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;line-height:1;}
   .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
-  .content{padding:0 24px 32px;}
-  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:24px 0 12px;}
-  .section-title span{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px;text-transform:none;letter-spacing:0;}
-  .table-wrap{background:var(--white);border:1px solid var(--border);overflow:auto;margin-bottom:24px;}
+  /* TODAY PANEL */
+  .today-panel{margin:20px 24px 0;background:var(--white);border:1px solid var(--border);border-left:4px solid var(--navy);}
+  .today-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:12px;}
+  .today-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;}
+  .today-sub{font-size:12px;color:var(--muted);}
+  .today-empty{padding:20px 18px;font-size:13px;color:var(--muted);font-style:italic;}
+  /* CHART */
+  .chart-panel{background:var(--white);border:1px solid var(--border);padding:20px;margin:16px 24px 0;}
+  .chart-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .chart-sub{font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .chart-wrap{position:relative;height:200px;}
+  /* TABLES */
+  .content{padding:16px 24px 32px;}
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:24px 0 10px;}
+  .section-title span{color:var(--muted);font-weight:600;font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0;}
+  .table-wrap{background:var(--white);border:1px solid var(--border);overflow:auto;margin-bottom:16px;}
   table{width:100%;border-collapse:collapse;font-size:13px;}
-  th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--offwhite);white-space:nowrap;}
+  th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:9px 12px;text-align:left;border-bottom:2px solid var(--border);background:var(--offwhite);white-space:nowrap;}
   th.num{text-align:right;}
-  td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+  td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;}
   td.num{text-align:right;font-variant-numeric:tabular-nums;}
   tr:last-child td{border-bottom:none;}
   tr:hover td{background:#fafafa;}
+  tr.row-overdue td{background:#fef9f9;}
+  tr.row-today td{background:#fffdf0;}
   .overdue{color:var(--red);font-weight:600;}
   .due-today{color:var(--amber);font-weight:600;}
   .status-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:var(--offwhite);color:var(--muted);}
-  .loading{text-align:center;padding:60px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
-  .error-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:16px 20px;font-size:13px;margin:20px 24px;border-radius:3px;display:none;}
+  .date-note{font-size:10px;color:#aaa;display:block;}
+  .loading{text-align:center;padding:40px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+  .error-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:14px 18px;font-size:13px;margin:16px 24px;border-radius:3px;display:none;}
 </style>
 </head>
 <body>
@@ -67,7 +85,7 @@
   <div class="topbar-right"><a href="/logout" class="logout-btn">Sign Out</a></div>
 </div>
 <div class="controls">
-  <span class="ctrl-label">Period</span>
+  <span class="ctrl-label">Received Period</span>
   <div class="btn-group" id="periodBtns">
     <button data-days="7">7d</button><button data-days="14">14d</button><button data-days="31" class="active">31d</button>
   </div>
@@ -81,68 +99,191 @@
     <button data-shift="all" class="active">All</button><button data-shift="night">Night</button><button data-shift="day">Day</button>
   </div>
 </div>
-<div id="shiftNotice" class="shift-notice">Goods In is a day shift operation. Shift filter does not apply here - showing all goods received.</div>
+<div id="shiftNotice" class="shift-notice">Goods In is a day shift operation. Shift filter does not apply here — showing all goods received.</div>
 <div class="error-box" id="errorBox"></div>
+
+<!-- KPI STRIP -->
 <div class="kpi-strip">
-  <div class="kpi-card"><div class="kpi-label">Lines Received</div><div class="kpi-value" id="kpiLines">--</div><div class="kpi-sub">GRN lines</div></div>
-  <div class="kpi-card"><div class="kpi-label">Units Received</div><div class="kpi-value" id="kpiUnits">--</div><div class="kpi-sub">total qty</div></div>
+  <div class="kpi-card navy"><div class="kpi-label">Expected Today</div><div class="kpi-value" id="kpiTodayLines">--</div><div class="kpi-sub" id="kpiTodayWeight">-- kg</div></div>
+  <div class="kpi-card"><div class="kpi-label">Expected This Week</div><div class="kpi-value" id="kpiWeekLines">--</div><div class="kpi-sub" id="kpiWeekWeight">-- kg</div></div>
+  <div class="kpi-card"><div class="kpi-label">Lines Received</div><div class="kpi-value" id="kpiLines">--</div><div class="kpi-sub">selected period</div></div>
   <div class="kpi-card"><div class="kpi-label">Weight Received</div><div class="kpi-value" id="kpiWeight">--</div><div class="kpi-sub">kg</div></div>
-  <div class="kpi-card alert"><div class="kpi-label">Overdue POs</div><div class="kpi-value" id="kpiOverdue">--</div><div class="kpi-sub">past required date</div></div>
-  <div class="kpi-card amber"><div class="kpi-label">Open PO Lines</div><div class="kpi-value" id="kpiOutstanding">--</div><div class="kpi-sub">qty outstanding</div></div>
+  <div class="kpi-card alert"><div class="kpi-label">Overdue POs</div><div class="kpi-value" id="kpiOverdue">--</div><div class="kpi-sub">missed promised date</div></div>
+  <div class="kpi-card amber"><div class="kpi-label">Open PO Lines</div><div class="kpi-value" id="kpiOpenLines">--</div><div class="kpi-sub">W + R + P status</div></div>
 </div>
+
+<!-- TODAY'S EXPECTED -->
+<div class="today-panel">
+  <div class="today-header">
+    <span class="today-title">Expected Today</span>
+    <span class="today-sub" id="todayDateLabel"></span>
+  </div>
+  <div id="todayContent"><div class="loading">Loading...</div></div>
+</div>
+
+<!-- 7-DAY INBOUND CHART -->
+<div class="chart-panel">
+  <div class="chart-title">Inbound Weight — Next 14 Days</div>
+  <div class="chart-sub">Expected kg per day based on promised delivery date (falling back to required date where no promised date set)</div>
+  <div class="chart-wrap"><canvas id="chartInbound"></canvas></div>
+</div>
+
 <div class="content">
-  <div class="section-title">Goods In Productivity <span>by operative, sorted by lines received</span></div>
-  <div id="productivityWrap" class="table-wrap"><div class="loading">Loading goods in data...</div></div>
-  <div class="section-title">Outstanding Purchase Orders <span>open lines ordered by required date</span></div>
-  <div id="outstandingWrap" class="table-wrap"><div class="loading">Loading outstanding POs...</div></div>
+  <!-- PRODUCTIVITY -->
+  <div class="section-title">Goods In Productivity <span>by operative for selected period</span></div>
+  <div id="productivityWrap" class="table-wrap"><div class="loading">Loading...</div></div>
+
+  <!-- OUTSTANDING POs -->
+  <div class="section-title">Outstanding Purchase Orders <span>W/R/P status only — sorted by expected date</span></div>
+  <div id="outstandingWrap" class="table-wrap"><div class="loading">Loading...</div></div>
 </div>
+
 <script>
 let days=31,cStart=null,cEnd=null;
+let inboundChart=null;
 const fmt=n=>n==null?'--':Number(n).toLocaleString('en-GB',{maximumFractionDigits:1});
-const fmtDate=s=>{if(!s)return '--';return new Date(s).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
-const isOverdue=s=>s&&new Date(s)<new Date(new Date().toDateString());
-const isDueToday=s=>s&&new Date(s).toDateString()===new Date().toDateString();
+const fmtDate=s=>{if(!s)return '--';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+const fmtDateShort=s=>{if(!s)return '--';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});};
+const today=new Date().toISOString().slice(0,10);
+const isOverdue=s=>s&&s<today;
+const isDueToday=s=>s&&s===today;
+
+document.getElementById('todayDateLabel').textContent=new Date(today+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 document.querySelectorAll('#shiftBtns button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('#shiftBtns button').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
-  const s=b.dataset.shift;
-  document.getElementById('shiftNotice').style.display=(s!=='all')?'block':'none';
+  document.getElementById('shiftNotice').style.display=b.dataset.shift!=='all'?'block':'none';
 }));
-document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;loadProductivity();}));
+document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;loadProductivity();
+}));
 function applyCustom(){const s=document.getElementById('startDate').value,e=document.getElementById('endDate').value;if(!s||!e)return;cStart=s;cEnd=e;document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));loadProductivity();}
 function url(){return cStart&&cEnd?'/api/goodsin?startDate='+cStart+'&endDate='+cEnd:'/api/goodsin?days='+days;}
+
 async function loadProductivity(){
-  document.getElementById('productivityWrap').innerHTML='<div class="loading">Loading goods in data...</div>';
+  document.getElementById('productivityWrap').innerHTML='<div class="loading">Loading...</div>';
   try{
-    const j=await(await fetch(url())).json();if(!j.success)throw new Error(j.error);
+    const j=await(await fetch(url())).json();
+    if(!j.success)throw new Error(j.error);
     const rows=j.data;
-    let tL=0,tU=0,tW=0;const by={};
-    rows.forEach(r=>{tL+=+r.lines_received||0;tU+=+r.units_received||0;tW+=+r.weight_kg||0;if(!by[r.operative])by[r.operative]={lines:0,units:0,weight:0,days:new Set()};by[r.operative].lines+=+r.lines_received||0;by[r.operative].units+=+r.units_received||0;by[r.operative].weight+=+r.weight_kg||0;by[r.operative].days.add(r.grn_date);});
+    let tL=0,tW=0;const by={};
+    rows.forEach(r=>{
+      tL+=+r.lines_received||0;tW+=+r.weight_kg||0;
+      if(!by[r.operative])by[r.operative]={lines:0,units:0,weight:0,days:new Set()};
+      by[r.operative].lines+=+r.lines_received||0;
+      by[r.operative].units+=+r.units_received||0;
+      by[r.operative].weight+=+r.weight_kg||0;
+      by[r.operative].days.add(r.grn_date);
+    });
     document.getElementById('kpiLines').textContent=fmt(tL);
-    document.getElementById('kpiUnits').textContent=fmt(tU);
     document.getElementById('kpiWeight').textContent=fmt(Math.round(tW));
     const sorted=Object.entries(by).sort((a,b)=>b[1].lines-a[1].lines);
+    if(sorted.length===0){document.getElementById('productivityWrap').innerHTML='<div class="loading">No goods in activity recorded for this period</div>';return;}
     let h='<table><thead><tr><th>Operative</th><th class="num">Lines</th><th class="num">Units</th><th class="num">Weight (kg)</th><th class="num">Days Active</th><th class="num">Lines/Day</th></tr></thead><tbody>';
-    sorted.forEach(([op,v])=>{h+='<tr><td>'+op+'</td><td class="num">'+fmt(v.lines)+'</td><td class="num">'+fmt(v.units)+'</td><td class="num">'+fmt(Math.round(v.weight))+'</td><td class="num">'+v.days.size+'</td><td class="num">'+fmt(Math.round(v.lines/v.days.size))+'</td></tr>';});
+    sorted.forEach(([op,v])=>{
+      h+='<tr><td>'+op+'</td><td class="num">'+fmt(v.lines)+'</td><td class="num">'+fmt(v.units)+'</td><td class="num">'+fmt(Math.round(v.weight))+'</td><td class="num">'+v.days.size+'</td><td class="num">'+fmt(Math.round(v.lines/v.days.size))+'</td></tr>';
+    });
     document.getElementById('productivityWrap').innerHTML=h+'</tbody></table>';
-  }catch(e){document.getElementById('errorBox').textContent='Error: '+e.message;document.getElementById('errorBox').style.display='block';}
+  }catch(e){showError('Productivity error: '+e.message);}
 }
+
 async function loadOutstanding(){
   try{
-    const j=await(await fetch('/api/goodsin-outstanding')).json();if(!j.success)throw new Error(j.error);
+    const j=await(await fetch('/api/goodsin-outstanding')).json();
+    if(!j.success)throw new Error(j.error);
     const rows=j.data;
-    const overduePOs=new Set(rows.filter(r=>isOverdue(r.required_date)).map(r=>r.po_number));
-    const totalOutstanding=rows.reduce((s,r)=>s+(+r.qty_outstanding||0),0);
+
+    // KPI calcs
+    const overduePOs=new Set(rows.filter(r=>isOverdue(r.expected_date)).map(r=>r.po_number));
+    const totalLines=rows.length;
     document.getElementById('kpiOverdue').textContent=overduePOs.size;
-    document.getElementById('kpiOutstanding').textContent=fmt(totalOutstanding);
-    let h='<table><thead><tr><th>PO</th><th>Supplier</th><th>SKU</th><th>Description</th><th class="num">Ordered</th><th class="num">Received</th><th class="num">Outstanding</th><th class="num">Weight kg</th><th>Required</th><th>Status</th></tr></thead><tbody>';
-    rows.forEach(r=>{const od=isOverdue(r.required_date),dt=isDueToday(r.required_date);const dc=od?'overdue':dt?'due-today':'';h+='<tr><td>'+r.po_number+'</td><td>'+r.supplier+'</td><td>'+r.sku+'</td><td>'+r.description+'</td><td class="num">'+fmt(r.qty_ordered)+'</td><td class="num">'+fmt(r.qty_received)+'</td><td class="num">'+fmt(r.qty_outstanding)+'</td><td class="num">'+fmt(r.weight_outstanding_kg)+'</td><td class="'+dc+'">'+fmtDate(r.required_date)+'</td><td><span class="status-badge">'+r.status+'</span></td></tr>';});
+    document.getElementById('kpiOpenLines').textContent=fmt(totalLines);
+
+    // Today's expected - group by supplier
+    const todayRows=rows.filter(r=>isDueToday(r.expected_date));
+    const weekRows=rows.filter(r=>r.expected_date&&r.expected_date>=today&&r.expected_date<=addDays(today,7));
+    document.getElementById('kpiTodayLines').textContent=fmt(todayRows.length);
+    document.getElementById('kpiTodayWeight').textContent=fmt(Math.round(todayRows.reduce((s,r)=>s+(+r.weight_outstanding_kg||0),0)))+' kg';
+    document.getElementById('kpiWeekLines').textContent=fmt(weekRows.length);
+    document.getElementById('kpiWeekWeight').textContent=fmt(Math.round(weekRows.reduce((s,r)=>s+(+r.weight_outstanding_kg||0),0)))+' kg';
+
+    // Today panel
+    if(todayRows.length===0){
+      document.getElementById('todayContent').innerHTML='<div class="today-empty">Nothing expected today.</div>';
+    } else {
+      const bySupplier={};
+      todayRows.forEach(r=>{
+        if(!bySupplier[r.supplier])bySupplier[r.supplier]={pos:new Set(),lines:0,qty:0,weight:0};
+        bySupplier[r.supplier].pos.add(r.po_number);
+        bySupplier[r.supplier].lines++;
+        bySupplier[r.supplier].qty+=+r.qty_outstanding||0;
+        bySupplier[r.supplier].weight+=+r.weight_outstanding_kg||0;
+      });
+      let h='<table><thead><tr><th>Supplier</th><th class="num">POs</th><th class="num">Lines</th><th class="num">Qty Outstanding</th><th class="num">Weight (kg)</th></tr></thead><tbody>';
+      Object.entries(bySupplier).sort((a,b)=>b[1].weight-a[1].weight).forEach(([sup,v])=>{
+        h+='<tr><td>'+sup+'</td><td class="num">'+v.pos.size+'</td><td class="num">'+v.lines+'</td><td class="num">'+fmt(v.qty)+'</td><td class="num">'+fmt(Math.round(v.weight))+'</td></tr>';
+      });
+      document.getElementById('todayContent').innerHTML=h+'</tbody></table>';
+    }
+
+    // 14-day inbound chart
+    const chartDates=[];
+    const chartWeights=[];
+    const chartLines=[];
+    for(let i=0;i<14;i++){
+      const d=addDays(today,i);
+      chartDates.push(fmtDateShort(d));
+      const dayRows=rows.filter(r=>r.expected_date===d);
+      chartWeights.push(Math.round(dayRows.reduce((s,r)=>s+(+r.weight_outstanding_kg||0),0)));
+      chartLines.push(dayRows.length);
+    }
+    if(inboundChart)inboundChart.destroy();
+    inboundChart=new Chart(document.getElementById('chartInbound'),{
+      type:'bar',
+      data:{labels:chartDates,datasets:[
+        {label:'Weight (kg)',data:chartWeights,backgroundColor:chartDates.map((_,i)=>i===0?'#1B365D':'rgba(27,54,93,0.35)'),borderWidth:0,yAxisID:'y'},
+        {type:'line',label:'Lines',data:chartLines,borderColor:'#9ACD00',backgroundColor:'transparent',borderWidth:2,pointRadius:3,pointBackgroundColor:'#9ACD00',tension:0.2,yAxisID:'y2'}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{font:{family:'Barlow',size:11},boxWidth:10}},
+          tooltip:{callbacks:{title:t=>'Expected: '+chartDates[t[0].dataIndex]}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{family:'Barlow',size:10}}},
+          y:{grid:{color:'#f0f0f0'},border:{display:false},ticks:{font:{family:'Barlow',size:10}},title:{display:true,text:'kg',font:{family:'Barlow',size:10},color:'#999'}},
+          y2:{position:'right',grid:{display:false},border:{display:false},ticks:{font:{family:'Barlow',size:10}},title:{display:true,text:'Lines',font:{family:'Barlow',size:10},color:'#9ACD00'}}
+        }
+      }
+    });
+
+    // Full outstanding table
+    let h='<table><thead><tr><th>PO</th><th>Supplier</th><th>SKU</th><th>Description</th><th class="num">Qty O/S</th><th class="num">Weight kg</th><th class="num">Value</th><th>Expected</th><th>Status</th></tr></thead><tbody>';
+    rows.forEach(r=>{
+      const od=isOverdue(r.expected_date),dt=isDueToday(r.expected_date);
+      const rc=od?'row-overdue':dt?'row-today':'';
+      const dc=od?'overdue':dt?'due-today':'';
+      const dateNote=r.poh_promised_date?'':' <span class="date-note">(req date)</span>';
+      h+='<tr class="'+rc+'"><td>'+r.po_number+'</td><td>'+r.supplier+'</td><td>'+(r.sku||'')+'</td><td>'+(r.description||'')+'</td>';
+      h+='<td class="num">'+fmt(r.qty_outstanding)+'</td><td class="num">'+fmt(r.weight_outstanding_kg)+'</td><td class="num">'+fmt(r.value_outstanding)+'</td>';
+      h+='<td class="'+dc+'">'+fmtDate(r.expected_date)+dateNote+'</td>';
+      h+='<td><span class="status-badge">'+r.status+'</span></td></tr>';
+    });
     document.getElementById('outstandingWrap').innerHTML=h+'</tbody></table>';
-  }catch(e){document.getElementById('errorBox').textContent='Outstanding error: '+e.message;document.getElementById('errorBox').style.display='block';}
+  }catch(e){showError('Outstanding error: '+e.message);}
 }
-const now=new Date(),e=now.toISOString().slice(0,10),s=new Date(now);s.setDate(s.getDate()-31);
-document.getElementById('endDate').value=e;document.getElementById('startDate').value=s.toISOString().slice(0,10);
+
+function addDays(dateStr,n){
+  const d=new Date(dateStr+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);
+}
+function showError(msg){
+  const b=document.getElementById('errorBox');b.textContent=msg;b.style.display='block';
+}
+
+const now=new Date(),e=now.toISOString().slice(0,10),s=new Date(now);
+s.setDate(s.getDate()-31);
+document.getElementById('endDate').value=e;
+document.getElementById('startDate').value=s.toISOString().slice(0,10);
 loadProductivity();
 loadOutstanding();
 </script>
