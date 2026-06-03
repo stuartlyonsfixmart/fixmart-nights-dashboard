@@ -74,6 +74,11 @@ function shiftFilter(shift, tsCol) {
   return '';
 }
 
+function bqDate(val) {
+  if (!val) return null;
+  return (val.value || String(val)).slice(0, 10);
+}
+
 // SHIFT CLASSIFICATION
 app.get('/api/shift-classification', async (req, res) => {
   const type = req.query.type || 'picking';
@@ -293,7 +298,7 @@ app.get('/api/picking-trends', async (req, res) => {
 
   try {
     const [rows] = await bigquery.query({ query: lines.join('\n'), params: { startDate, endDate }, location: LOC });
-    cache.set(cacheKey, rows.map(r => ({ person: r.person, shift_date: r.shift_date ? (r.shift_date.value || String(r.shift_date)).slice(0, 10) : null, shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg })));
+    cache.set(cacheKey, rows.map(r => ({ person: r.person, shift_date: bqDate(r.shift_date), shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg })));
     res.json({ success: true, data: cache.get(cacheKey), cached: false });
   } catch (err) {
     console.error('Picking trends error:', err);
@@ -335,7 +340,7 @@ app.get('/api/packing-trends', async (req, res) => {
 
   try {
     const [rows] = await bigquery.query({ query: lines.join('\n'), params: { startDate, endDate }, location: LOC });
-    cache.set(cacheKey, rows.map(r => ({ person: r.person, shift_date: r.shift_date ? (r.shift_date.value || String(r.shift_date)).slice(0, 10) : null, shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg })));
+    cache.set(cacheKey, rows.map(r => ({ person: r.person, shift_date: bqDate(r.shift_date), shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg })));
     res.json({ success: true, data: cache.get(cacheKey), cached: false });
   } catch (err) {
     console.error('Packing trends error:', err);
@@ -350,7 +355,6 @@ app.get('/api/goodsin', async (req, res) => {
   const cached = cache.get(cacheKey);
   if (cached) return res.json({ success: true, data: cached, cached: true });
 
-  // HeaderIncomingStockFlag may be stored as 1/true/'true' - use HeaderTransactionTypeCode = 'GRN' as safer filter
   const query = [
     'SELECT im.UserName AS operative, DATE(im.vth_transaction_datetime) AS grn_date,',
     '  COUNT(*) AS lines_received, SUM(ABS(im.Quantity)) AS units_received,',
@@ -378,6 +382,8 @@ app.get('/api/goodsin', async (req, res) => {
 // GOODS IN OUTSTANDING
 // pos_status codes: W=Waiting for goods, R=Awaiting response, P=Partially received
 // Excluded: F=Fully received, X=Cancelled, C=Complete, A=Awaiting conversion
+// expected_date = COALESCE(poh_promised_date, poh_required_date)
+// poh_promised_date is supplier's committed date; falls back to required date if not set
 app.get('/api/goodsin-outstanding', async (req, res) => {
   const cacheKey = 'goodsin_outstanding';
   const cached = cache.get(cacheKey);
@@ -387,8 +393,9 @@ app.get('/api/goodsin-outstanding', async (req, res) => {
     'SELECT',
     '  poh.poh_order_number AS po_number,',
     '  COALESCE(sd.sd_name, \'Unknown\') AS supplier,',
-    '  poh.poh_required_date AS required_date,',
-    '  poh.poh_promised_date AS promised_date,',
+    '  DATE(poh.poh_required_date) AS required_date,',
+    '  DATE(poh.poh_promised_date) AS promised_date,',
+    '  DATE(COALESCE(poh.poh_promised_date, poh.poh_required_date)) AS expected_date,',
     '  poh.pos_description AS status,',
     '  vd.vad_variant_code AS sku,',
     '  pol.pol_vad_description AS description,',
@@ -403,7 +410,7 @@ app.get('/api/goodsin-outstanding', async (req, res) => {
     'LEFT JOIN `' + P + '.fixmart_bi.supply_detail` sd ON sd.sd_id = poh.poh_sd_id',
     'WHERE pol.pol_qty_ordered > pol.pol_qty_received',
     "  AND poh.pos_status IN ('W', 'R', 'P')",
-    'ORDER BY poh.poh_required_date ASC, poh.poh_order_number'
+    'ORDER BY expected_date ASC NULLS LAST, poh.poh_order_number'
   ].join('\n');
 
   try {
@@ -411,8 +418,10 @@ app.get('/api/goodsin-outstanding', async (req, res) => {
     const serialised = rows.map(r => ({
       po_number: r.po_number,
       supplier: r.supplier || 'Unknown',
-      required_date: r.required_date ? (r.required_date.value || String(r.required_date)).slice(0, 10) : null,
-      promised_date: r.promised_date ? (r.promised_date.value || String(r.promised_date)).slice(0, 10) : null,
+      required_date: bqDate(r.required_date),
+      promised_date: bqDate(r.promised_date),
+      expected_date: bqDate(r.expected_date),
+      poh_promised_date: bqDate(r.promised_date), // flag for frontend to show (req date) note
       status: r.status,
       sku: r.sku,
       description: r.description,
