@@ -20,37 +20,27 @@
   .nav-link.active{color:var(--black);background:var(--lime);}
   .topbar-right{margin-left:auto;}
   .logout-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:5px 12px;border:1px solid #444;border-radius:3px;}
-  .controls{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-  .ctrl-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
-  .btn-group{display:flex;}
-  .btn-group button{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--border);background:var(--white);cursor:pointer;color:var(--muted);}
-  .btn-group button:first-child{border-radius:3px 0 0 3px;}
-  .btn-group button:last-child{border-radius:0 3px 3px 0;}
-  .btn-group button:not(:first-child){border-left:none;}
-  .btn-group button.active{background:var(--navy);color:var(--white);border-color:var(--navy);}
-  .date-input{font-family:'Barlow',sans-serif;font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:3px;}
-  .apply-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--lime);border:none;border-radius:3px;cursor:pointer;}
-  .shift-notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;padding:12px 24px;display:none;}
   /* KPI STRIP */
-  .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:20px 24px 0;}
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 24px 0;}
   .kpi-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--lime);padding:14px 16px;}
   .kpi-card.alert{border-top-color:var(--red);}
   .kpi-card.amber{border-top-color:var(--amber);}
   .kpi-card.navy{border-top-color:var(--navy);}
   .kpi-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;line-height:1;}
+  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;line-height:1;}
   .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
-  /* TODAY PANEL */
-  .today-panel{margin:20px 24px 0;background:var(--white);border:1px solid var(--border);border-left:4px solid var(--navy);}
-  .today-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:12px;}
-  .today-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;}
-  .today-sub{font-size:12px;color:var(--muted);}
-  .today-empty{padding:20px 18px;font-size:13px;color:var(--muted);font-style:italic;}
   /* CHART */
   .chart-panel{background:var(--white);border:1px solid var(--border);padding:20px;margin:16px 24px 0;}
   .chart-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
-  .chart-sub{font-size:11px;color:var(--muted);margin-bottom:14px;}
-  .chart-wrap{position:relative;height:200px;}
+  .chart-sub{font-size:11px;color:var(--muted);margin-bottom:4px;}
+  .chart-hint{font-size:11px;color:var(--navy);font-weight:600;margin-bottom:14px;}
+  .chart-wrap{position:relative;height:220px;}
+  /* DETAIL PANEL */
+  .detail-panel{margin:0 24px;background:var(--white);border:1px solid var(--border);border-top:none;}
+  .detail-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:12px;background:var(--offwhite);}
+  .detail-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;}
+  .detail-meta{font-size:12px;color:var(--muted);}
+  .detail-empty{padding:20px 18px;font-size:13px;color:var(--muted);font-style:italic;}
   /* TABLES */
   .content{padding:16px 24px 32px;}
   .section-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:24px 0 10px;}
@@ -68,7 +58,7 @@
   .overdue{color:var(--red);font-weight:600;}
   .due-today{color:var(--amber);font-weight:600;}
   .status-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:var(--offwhite);color:var(--muted);}
-  .date-note{font-size:10px;color:#aaa;display:block;}
+  .date-note{font-size:10px;color:#aaa;}
   .loading{text-align:center;padding:40px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
   .error-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:14px 18px;font-size:13px;margin:16px 24px;border-radius:3px;display:none;}
 </style>
@@ -84,208 +74,251 @@
   </nav>
   <div class="topbar-right"><a href="/logout" class="logout-btn">Sign Out</a></div>
 </div>
-<div class="controls">
-  <span class="ctrl-label">Received Period</span>
-  <div class="btn-group" id="periodBtns">
-    <button data-days="7">7d</button><button data-days="14">14d</button><button data-days="31" class="active">31d</button>
-  </div>
-  <span class="ctrl-label" style="margin-left:8px">Custom</span>
-  <input type="date" class="date-input" id="startDate">
-  <span style="color:var(--muted);font-size:12px">to</span>
-  <input type="date" class="date-input" id="endDate">
-  <button class="apply-btn" onclick="applyCustom()">Apply</button>
-  <span class="ctrl-label" style="margin-left:8px">Shift</span>
-  <div class="btn-group" id="shiftBtns">
-    <button data-shift="all" class="active">All</button><button data-shift="night">Night</button><button data-shift="day">Day</button>
-  </div>
-</div>
-<div id="shiftNotice" class="shift-notice">Goods In is a day shift operation. Shift filter does not apply here — showing all goods received.</div>
+
 <div class="error-box" id="errorBox"></div>
 
 <!-- KPI STRIP -->
 <div class="kpi-strip">
-  <div class="kpi-card navy"><div class="kpi-label">Expected Today</div><div class="kpi-value" id="kpiTodayLines">--</div><div class="kpi-sub" id="kpiTodayWeight">-- kg</div></div>
-  <div class="kpi-card"><div class="kpi-label">Expected This Week</div><div class="kpi-value" id="kpiWeekLines">--</div><div class="kpi-sub" id="kpiWeekWeight">-- kg</div></div>
-  <div class="kpi-card"><div class="kpi-label">Lines Received</div><div class="kpi-value" id="kpiLines">--</div><div class="kpi-sub">selected period</div></div>
-  <div class="kpi-card"><div class="kpi-label">Weight Received</div><div class="kpi-value" id="kpiWeight">--</div><div class="kpi-sub">kg</div></div>
-  <div class="kpi-card alert"><div class="kpi-label">Overdue POs</div><div class="kpi-value" id="kpiOverdue">--</div><div class="kpi-sub">missed promised date</div></div>
-  <div class="kpi-card amber"><div class="kpi-label">Open PO Lines</div><div class="kpi-value" id="kpiOpenLines">--</div><div class="kpi-sub">W + R + P status</div></div>
-</div>
-
-<!-- TODAY'S EXPECTED -->
-<div class="today-panel">
-  <div class="today-header">
-    <span class="today-title">Expected Today</span>
-    <span class="today-sub" id="todayDateLabel"></span>
+  <div class="kpi-card navy">
+    <div class="kpi-label">Expected Today</div>
+    <div class="kpi-value" id="kpiTodayLines">--</div>
+    <div class="kpi-sub" id="kpiTodayWeight">-- kg</div>
   </div>
-  <div id="todayContent"><div class="loading">Loading...</div></div>
+  <div class="kpi-card">
+    <div class="kpi-label">Expected This Week</div>
+    <div class="kpi-value" id="kpiWeekLines">--</div>
+    <div class="kpi-sub" id="kpiWeekWeight">-- kg</div>
+  </div>
+  <div class="kpi-card alert">
+    <div class="kpi-label">Overdue POs</div>
+    <div class="kpi-value" id="kpiOverdue">--</div>
+    <div class="kpi-sub">missed promised date</div>
+  </div>
+  <div class="kpi-card amber">
+    <div class="kpi-label">Open PO Lines</div>
+    <div class="kpi-value" id="kpiOpenLines">--</div>
+    <div class="kpi-sub">W + R + P status</div>
+  </div>
 </div>
 
-<!-- 7-DAY INBOUND CHART -->
+<!-- 14-DAY INBOUND CHART -->
 <div class="chart-panel">
-  <div class="chart-title">Inbound Weight — Next 14 Days</div>
-  <div class="chart-sub">Expected kg per day based on promised delivery date (falling back to required date where no promised date set)</div>
+  <div class="chart-title">Expected Inbound — Next 14 Days</div>
+  <div class="chart-sub">Expected weight (kg) per day based on promised delivery date, falling back to required date where no promised date is set.</div>
+  <div class="chart-hint">Click any bar to see the detail for that day below.</div>
   <div class="chart-wrap"><canvas id="chartInbound"></canvas></div>
 </div>
 
-<div class="content">
-  <!-- PRODUCTIVITY -->
-  <div class="section-title">Goods In Productivity <span>by operative for selected period</span></div>
-  <div id="productivityWrap" class="table-wrap"><div class="loading">Loading...</div></div>
+<!-- DRILL-DOWN DETAIL PANEL -->
+<div class="detail-panel">
+  <div class="detail-header">
+    <span class="detail-title" id="detailTitle">Today's Expected</span>
+    <span class="detail-meta" id="detailMeta"></span>
+  </div>
+  <div id="detailContent"><div class="loading">Loading...</div></div>
+</div>
 
-  <!-- OUTSTANDING POs -->
-  <div class="section-title">Outstanding Purchase Orders <span>W/R/P status only — sorted by expected date</span></div>
+<div class="content">
+  <!-- FULL OUTSTANDING PO TABLE -->
+  <div class="section-title">All Outstanding Purchase Orders <span>W/R/P status only, sorted by expected date</span></div>
   <div id="outstandingWrap" class="table-wrap"><div class="loading">Loading...</div></div>
 </div>
 
 <script>
-let days=31,cStart=null,cEnd=null;
-let inboundChart=null;
-const fmt=n=>n==null?'--':Number(n).toLocaleString('en-GB',{maximumFractionDigits:1});
-const fmtDate=s=>{if(!s)return '--';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
-const fmtDateShort=s=>{if(!s)return '--';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});};
-const today=new Date().toISOString().slice(0,10);
-const isOverdue=s=>s&&s<today;
-const isDueToday=s=>s&&s===today;
+const fmt = n => n == null ? '--' : Number(n).toLocaleString('en-GB', { maximumFractionDigits: 1 });
+const fmtDate = s => { if (!s) return '--'; return new Date(s + 'T12:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); };
+const fmtDateShort = s => { if (!s) return '--'; return new Date(s + 'T12:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }); };
+const fmtDateFull = s => { if (!s) return '--'; return new Date(s + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); };
+const today = new Date().toISOString().slice(0, 10);
+const isOverdue = s => s && s < today;
+const isDueToday = s => s && s === today;
+function addDays(dateStr, n) { const d = new Date(dateStr + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
 
-document.getElementById('todayDateLabel').textContent=new Date(today+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+let allRows = [];
+let inboundChart = null;
+let selectedDate = today;
 
-document.querySelectorAll('#shiftBtns button').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('#shiftBtns button').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  document.getElementById('shiftNotice').style.display=b.dataset.shift!=='all'?'block':'none';
-}));
-document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;loadProductivity();
-}));
-function applyCustom(){const s=document.getElementById('startDate').value,e=document.getElementById('endDate').value;if(!s||!e)return;cStart=s;cEnd=e;document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));loadProductivity();}
-function url(){return cStart&&cEnd?'/api/goodsin?startDate='+cStart+'&endDate='+cEnd:'/api/goodsin?days='+days;}
+function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = msg; b.style.display = 'block'; }
 
-async function loadProductivity(){
-  document.getElementById('productivityWrap').innerHTML='<div class="loading">Loading...</div>';
-  try{
-    const j=await(await fetch(url())).json();
-    if(!j.success)throw new Error(j.error);
-    const rows=j.data;
-    let tL=0,tW=0;const by={};
-    rows.forEach(r=>{
-      tL+=+r.lines_received||0;tW+=+r.weight_kg||0;
-      if(!by[r.operative])by[r.operative]={lines:0,units:0,weight:0,days:new Set()};
-      by[r.operative].lines+=+r.lines_received||0;
-      by[r.operative].units+=+r.units_received||0;
-      by[r.operative].weight+=+r.weight_kg||0;
-      by[r.operative].days.add(r.grn_date);
-    });
-    document.getElementById('kpiLines').textContent=fmt(tL);
-    document.getElementById('kpiWeight').textContent=fmt(Math.round(tW));
-    const sorted=Object.entries(by).sort((a,b)=>b[1].lines-a[1].lines);
-    if(sorted.length===0){document.getElementById('productivityWrap').innerHTML='<div class="loading">No goods in activity recorded for this period</div>';return;}
-    let h='<table><thead><tr><th>Operative</th><th class="num">Lines</th><th class="num">Units</th><th class="num">Weight (kg)</th><th class="num">Days Active</th><th class="num">Lines/Day</th></tr></thead><tbody>';
-    sorted.forEach(([op,v])=>{
-      h+='<tr><td>'+op+'</td><td class="num">'+fmt(v.lines)+'</td><td class="num">'+fmt(v.units)+'</td><td class="num">'+fmt(Math.round(v.weight))+'</td><td class="num">'+v.days.size+'</td><td class="num">'+fmt(Math.round(v.lines/v.days.size))+'</td></tr>';
-    });
-    document.getElementById('productivityWrap').innerHTML=h+'</tbody></table>';
-  }catch(e){showError('Productivity error: '+e.message);}
+function renderDetail(dateStr) {
+  selectedDate = dateStr;
+  const rows = allRows.filter(r => r.expected_date === dateStr);
+  const totalWeight = Math.round(rows.reduce((s, r) => s + (+r.weight_outstanding_kg || 0), 0));
+  const totalQty = rows.reduce((s, r) => s + (+r.qty_outstanding || 0), 0);
+
+  const isOd = isOverdue(dateStr);
+  const isDt = isDueToday(dateStr);
+  let titleCls = isOd ? 'overdue' : isDt ? 'due-today' : '';
+  document.getElementById('detailTitle').innerHTML =
+    '<span class="' + titleCls + '">' + fmtDateFull(dateStr) + '</span>';
+  document.getElementById('detailMeta').textContent =
+    rows.length + ' lines from ' + new Set(rows.map(r => r.po_number)).size + ' POs — ' +
+    fmt(totalQty) + ' units — ' + fmt(totalWeight) + ' kg';
+
+  if (rows.length === 0) {
+    document.getElementById('detailContent').innerHTML = '<div class="detail-empty">Nothing expected on this date.</div>';
+    return;
+  }
+
+  // Group by supplier for summary, then show line detail
+  const bySupplier = {};
+  rows.forEach(r => {
+    if (!bySupplier[r.supplier]) bySupplier[r.supplier] = { pos: new Set(), lines: 0, qty: 0, weight: 0 };
+    bySupplier[r.supplier].pos.add(r.po_number);
+    bySupplier[r.supplier].lines++;
+    bySupplier[r.supplier].qty += +r.qty_outstanding || 0;
+    bySupplier[r.supplier].weight += +r.weight_outstanding_kg || 0;
+  });
+
+  let h = '<table><thead><tr><th>Supplier</th><th>PO</th><th>SKU</th><th>Description</th><th class="num">Qty O/S</th><th class="num">Weight (kg)</th><th>Status</th>';
+  if (isOd) h += '<th>Expected</th>';
+  h += '</tr></thead><tbody>';
+
+  // Sort by supplier weight desc
+  const sortedRows = [...rows].sort((a, b) => (bySupplier[b.supplier]?.weight || 0) - (bySupplier[a.supplier]?.weight || 0));
+  let lastSupplier = null;
+  sortedRows.forEach(r => {
+    const sup = r.supplier !== lastSupplier ? r.supplier : '';
+    lastSupplier = r.supplier;
+    h += '<tr>';
+    h += '<td>' + sup + '</td>';
+    h += '<td>' + r.po_number + '</td>';
+    h += '<td>' + (r.sku || '') + '</td>';
+    h += '<td>' + (r.description || '') + '</td>';
+    h += '<td class="num">' + fmt(r.qty_outstanding) + '</td>';
+    h += '<td class="num">' + fmt(r.weight_outstanding_kg) + '</td>';
+    h += '<td><span class="status-badge">' + r.status + '</span></td>';
+    if (isOd) h += '<td class="overdue">' + fmtDate(r.expected_date) + (r.promised_date ? '' : ' <span class="date-note">(req)</span>') + '</td>';
+    h += '</tr>';
+  });
+  document.getElementById('detailContent').innerHTML = h + '</tbody></table>';
 }
 
-async function loadOutstanding(){
-  try{
-    const j=await(await fetch('/api/goodsin-outstanding')).json();
-    if(!j.success)throw new Error(j.error);
-    const rows=j.data;
+function buildChart(rows) {
+  const chartDates = [];
+  const chartWeights = [];
+  const chartLines = [];
 
-    // KPI calcs
-    const overduePOs=new Set(rows.filter(r=>isOverdue(r.expected_date)).map(r=>r.po_number));
-    const totalLines=rows.length;
-    document.getElementById('kpiOverdue').textContent=overduePOs.size;
-    document.getElementById('kpiOpenLines').textContent=fmt(totalLines);
+  for (let i = 0; i < 14; i++) {
+    const d = addDays(today, i);
+    chartDates.push(d);
+    const dayRows = rows.filter(r => r.expected_date === d);
+    chartWeights.push(Math.round(dayRows.reduce((s, r) => s + (+r.weight_outstanding_kg || 0), 0)));
+    chartLines.push(dayRows.length);
+  }
 
-    // Today's expected - group by supplier
-    const todayRows=rows.filter(r=>isDueToday(r.expected_date));
-    const weekRows=rows.filter(r=>r.expected_date&&r.expected_date>=today&&r.expected_date<=addDays(today,7));
-    document.getElementById('kpiTodayLines').textContent=fmt(todayRows.length);
-    document.getElementById('kpiTodayWeight').textContent=fmt(Math.round(todayRows.reduce((s,r)=>s+(+r.weight_outstanding_kg||0),0)))+' kg';
-    document.getElementById('kpiWeekLines').textContent=fmt(weekRows.length);
-    document.getElementById('kpiWeekWeight').textContent=fmt(Math.round(weekRows.reduce((s,r)=>s+(+r.weight_outstanding_kg||0),0)))+' kg';
-
-    // Today panel
-    if(todayRows.length===0){
-      document.getElementById('todayContent').innerHTML='<div class="today-empty">Nothing expected today.</div>';
-    } else {
-      const bySupplier={};
-      todayRows.forEach(r=>{
-        if(!bySupplier[r.supplier])bySupplier[r.supplier]={pos:new Set(),lines:0,qty:0,weight:0};
-        bySupplier[r.supplier].pos.add(r.po_number);
-        bySupplier[r.supplier].lines++;
-        bySupplier[r.supplier].qty+=+r.qty_outstanding||0;
-        bySupplier[r.supplier].weight+=+r.weight_outstanding_kg||0;
-      });
-      let h='<table><thead><tr><th>Supplier</th><th class="num">POs</th><th class="num">Lines</th><th class="num">Qty Outstanding</th><th class="num">Weight (kg)</th></tr></thead><tbody>';
-      Object.entries(bySupplier).sort((a,b)=>b[1].weight-a[1].weight).forEach(([sup,v])=>{
-        h+='<tr><td>'+sup+'</td><td class="num">'+v.pos.size+'</td><td class="num">'+v.lines+'</td><td class="num">'+fmt(v.qty)+'</td><td class="num">'+fmt(Math.round(v.weight))+'</td></tr>';
-      });
-      document.getElementById('todayContent').innerHTML=h+'</tbody></table>';
-    }
-
-    // 14-day inbound chart
-    const chartDates=[];
-    const chartWeights=[];
-    const chartLines=[];
-    for(let i=0;i<14;i++){
-      const d=addDays(today,i);
-      chartDates.push(fmtDateShort(d));
-      const dayRows=rows.filter(r=>r.expected_date===d);
-      chartWeights.push(Math.round(dayRows.reduce((s,r)=>s+(+r.weight_outstanding_kg||0),0)));
-      chartLines.push(dayRows.length);
-    }
-    if(inboundChart)inboundChart.destroy();
-    inboundChart=new Chart(document.getElementById('chartInbound'),{
-      type:'bar',
-      data:{labels:chartDates,datasets:[
-        {label:'Weight (kg)',data:chartWeights,backgroundColor:chartDates.map((_,i)=>i===0?'#1B365D':'rgba(27,54,93,0.35)'),borderWidth:0,yAxisID:'y'},
-        {type:'line',label:'Lines',data:chartLines,borderColor:'#9ACD00',backgroundColor:'transparent',borderWidth:2,pointRadius:3,pointBackgroundColor:'#9ACD00',tension:0.2,yAxisID:'y2'}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{position:'bottom',labels:{font:{family:'Barlow',size:11},boxWidth:10}},
-          tooltip:{callbacks:{title:t=>'Expected: '+chartDates[t[0].dataIndex]}}},
-        scales:{
-          x:{grid:{display:false},ticks:{font:{family:'Barlow',size:10}}},
-          y:{grid:{color:'#f0f0f0'},border:{display:false},ticks:{font:{family:'Barlow',size:10}},title:{display:true,text:'kg',font:{family:'Barlow',size:10},color:'#999'}},
-          y2:{position:'right',grid:{display:false},border:{display:false},ticks:{font:{family:'Barlow',size:10}},title:{display:true,text:'Lines',font:{family:'Barlow',size:10},color:'#9ACD00'}}
+  if (inboundChart) inboundChart.destroy();
+  inboundChart = new Chart(document.getElementById('chartInbound'), {
+    type: 'bar',
+    data: {
+      labels: chartDates.map(fmtDateShort),
+      datasets: [
+        {
+          label: 'Weight (kg)',
+          data: chartWeights,
+          backgroundColor: chartDates.map((d, i) => {
+            if (d === selectedDate) return '#1B365D';
+            if (i === 0) return '#1B365D';
+            return 'rgba(27,54,93,0.3)';
+          }),
+          borderWidth: 0,
+          yAxisID: 'y'
+        },
+        {
+          type: 'line',
+          label: 'Lines',
+          data: chartLines,
+          borderColor: '#9ACD00',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: chartDates.map(d => d === selectedDate ? '#7aaa00' : '#9ACD00'),
+          tension: 0.2,
+          yAxisID: 'y2'
         }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      onClick: (evt, elements) => {
+        if (elements.length > 0) {
+          const idx = elements[0].index;
+          const clickedDate = chartDates[idx];
+          renderDetail(clickedDate);
+          buildChart(allRows); // re-render to update highlight
+        }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Barlow', size: 11 }, boxWidth: 10 } },
+        tooltip: {
+          callbacks: {
+            title: t => fmtDateFull(chartDates[t[0].dataIndex]),
+            afterBody: items => {
+              const idx = items[0].dataIndex;
+              return 'Lines: ' + chartLines[idx];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Barlow', size: 10 } } },
+        y: { grid: { color: '#f0f0f0' }, border: { display: false }, ticks: { font: { family: 'Barlow', size: 10 } }, title: { display: true, text: 'kg', font: { family: 'Barlow', size: 10 }, color: '#999' }, beginAtZero: true },
+        y2: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { font: { family: 'Barlow', size: 10 } }, title: { display: true, text: 'Lines', font: { family: 'Barlow', size: 10 }, color: '#9ACD00' }, beginAtZero: true }
       }
+    }
+  });
+}
+
+async function load() {
+  try {
+    const j = await (await fetch('/api/goodsin-outstanding')).json();
+    if (!j.success) throw new Error(j.error);
+    allRows = j.data;
+
+    // KPIs
+    const overduePOs = new Set(allRows.filter(r => isOverdue(r.expected_date)).map(r => r.po_number));
+    const todayRows = allRows.filter(r => isDueToday(r.expected_date));
+    const weekEnd = addDays(today, 7);
+    const weekRows = allRows.filter(r => r.expected_date && r.expected_date >= today && r.expected_date <= weekEnd);
+
+    document.getElementById('kpiTodayLines').textContent = fmt(todayRows.length);
+    document.getElementById('kpiTodayWeight').textContent = fmt(Math.round(todayRows.reduce((s, r) => s + (+r.weight_outstanding_kg || 0), 0))) + ' kg';
+    document.getElementById('kpiWeekLines').textContent = fmt(weekRows.length);
+    document.getElementById('kpiWeekWeight').textContent = fmt(Math.round(weekRows.reduce((s, r) => s + (+r.weight_outstanding_kg || 0), 0))) + ' kg';
+    document.getElementById('kpiOverdue').textContent = overduePOs.size;
+    document.getElementById('kpiOpenLines').textContent = fmt(allRows.length);
+
+    // Chart
+    buildChart(allRows);
+
+    // Default detail = today
+    renderDetail(today);
+
+    // Full table
+    let h = '<table><thead><tr><th>PO</th><th>Supplier</th><th>SKU</th><th>Description</th><th class="num">Qty O/S</th><th class="num">Weight kg</th><th>Expected</th><th>Status</th></tr></thead><tbody>';
+    allRows.forEach(r => {
+      const od = isOverdue(r.expected_date), dt = isDueToday(r.expected_date);
+      const rc = od ? 'row-overdue' : dt ? 'row-today' : '';
+      const dc = od ? 'overdue' : dt ? 'due-today' : '';
+      const dateNote = r.promised_date ? '' : ' <span class="date-note">(req)</span>';
+      h += '<tr class="' + rc + '">';
+      h += '<td>' + r.po_number + '</td>';
+      h += '<td>' + r.supplier + '</td>';
+      h += '<td>' + (r.sku || '') + '</td>';
+      h += '<td>' + (r.description || '') + '</td>';
+      h += '<td class="num">' + fmt(r.qty_outstanding) + '</td>';
+      h += '<td class="num">' + fmt(r.weight_outstanding_kg) + '</td>';
+      h += '<td class="' + dc + '">' + fmtDate(r.expected_date) + dateNote + '</td>';
+      h += '<td><span class="status-badge">' + r.status + '</span></td>';
+      h += '</tr>';
     });
+    document.getElementById('outstandingWrap').innerHTML = h + '</tbody></table>';
 
-    // Full outstanding table
-    let h='<table><thead><tr><th>PO</th><th>Supplier</th><th>SKU</th><th>Description</th><th class="num">Qty O/S</th><th class="num">Weight kg</th><th class="num">Value</th><th>Expected</th><th>Status</th></tr></thead><tbody>';
-    rows.forEach(r=>{
-      const od=isOverdue(r.expected_date),dt=isDueToday(r.expected_date);
-      const rc=od?'row-overdue':dt?'row-today':'';
-      const dc=od?'overdue':dt?'due-today':'';
-      const dateNote=r.poh_promised_date?'':' <span class="date-note">(req date)</span>';
-      h+='<tr class="'+rc+'"><td>'+r.po_number+'</td><td>'+r.supplier+'</td><td>'+(r.sku||'')+'</td><td>'+(r.description||'')+'</td>';
-      h+='<td class="num">'+fmt(r.qty_outstanding)+'</td><td class="num">'+fmt(r.weight_outstanding_kg)+'</td><td class="num">'+fmt(r.value_outstanding)+'</td>';
-      h+='<td class="'+dc+'">'+fmtDate(r.expected_date)+dateNote+'</td>';
-      h+='<td><span class="status-badge">'+r.status+'</span></td></tr>';
-    });
-    document.getElementById('outstandingWrap').innerHTML=h+'</tbody></table>';
-  }catch(e){showError('Outstanding error: '+e.message);}
+  } catch (e) { showError('Error: ' + e.message); }
 }
 
-function addDays(dateStr,n){
-  const d=new Date(dateStr+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);
-}
-function showError(msg){
-  const b=document.getElementById('errorBox');b.textContent=msg;b.style.display='block';
-}
-
-const now=new Date(),e=now.toISOString().slice(0,10),s=new Date(now);
-s.setDate(s.getDate()-31);
-document.getElementById('endDate').value=e;
-document.getElementById('startDate').value=s.toISOString().slice(0,10);
-loadProductivity();
-loadOutstanding();
+load();
 </script>
 </body>
 </html>
