@@ -69,8 +69,9 @@ function dateRange(q) {
   return { startDate: start.toISOString().slice(0, 10), endDate: end };
 }
 
-// pick_end_time and pack_end_time are STRING in BQ format: 2014-06-19T14:01:58.180000
-const TS = (col) => "PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', " + col + ")";
+// pick_end_time and pack_end_time are STRING, some rows contain "NaT" (pandas null)
+// NULLIF converts "NaT" to NULL before PARSE_TIMESTAMP, SAFE_ prefix silently nulls any other bad values
+const TS = (col) => "SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', NULLIF(" + col + ", 'NaT'))";
 
 // PICKING
 app.get('/api/picking', async (req, res) => {
@@ -103,6 +104,7 @@ app.get('/api/picking', async (req, res) => {
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_lines` pl ON pl.pickl_pick_id = ph.pick_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.order_line_item` oli ON oli.oli_id = pl.pickl_oli_id',
     '  WHERE ph.pick_end_time IS NOT NULL',
+    '    AND ph.pick_end_time != \'NaT\'',
     '    AND DATE(' + ts + ') BETWEEN @startDate AND @endDate',
     '    AND pi.pic_active = TRUE',
     '    AND pi.pic_name NOT IN ("Default picker", "Not Working")',
@@ -118,6 +120,7 @@ app.get('/api/picking', async (req, res) => {
     '  ROUND(SAFE_DIVIDE(SUM(order_count), COUNT(DISTINCT shift_date)), 1) AS orders_per_shift,',
     '  ROUND(SAFE_DIVIDE(SUM(pick_total_weight), COUNT(DISTINCT shift_date)), 1) AS weight_per_shift',
     'FROM pick_data',
+    'WHERE shift_date IS NOT NULL',
     'GROUP BY 1, 2',
     'ORDER BY total_lines DESC'
   ];
@@ -165,6 +168,7 @@ app.get('/api/packing', async (req, res) => {
     '  LEFT JOIN `' + P + '.fixmart_bi.pick_header` ph ON ph.pick_id = pkl.pickl_pick_id',
     '  LEFT JOIN `' + P + '.fixmart_bi.order_line_item` oli ON oli.oli_id = pkl.pickl_oli_id',
     '  WHERE pack.pack_end_time IS NOT NULL',
+    '    AND pack.pack_end_time != \'NaT\'',
     '    AND DATE(' + ts + ') BETWEEN @startDate AND @endDate',
     '    AND pac.pac_active = TRUE',
     '    AND pac.pac_name NOT IN ("Default packer", "Not Working")',
@@ -180,6 +184,7 @@ app.get('/api/packing', async (req, res) => {
     '  ROUND(SAFE_DIVIDE(SUM(order_count), COUNT(DISTINCT shift_date)), 1) AS orders_per_shift,',
     '  ROUND(SAFE_DIVIDE(SUM(total_weight), COUNT(DISTINCT shift_date)), 1) AS weight_per_shift',
     'FROM pack_data',
+    'WHERE shift_date IS NOT NULL',
     'GROUP BY 1, 2',
     'ORDER BY total_lines DESC'
   ];
