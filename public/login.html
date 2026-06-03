@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixmart - Nights Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --lime:#9ACD00; --lime-dark:#7aaa00; --black:#1a1a1a; --white:#fff; --offwhite:#f5f5f3; --border:#e0e0e0; --muted:#666; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Barlow',sans-serif; background:var(--offwhite); color:var(--black); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .login-wrap { width:400px; }
+  .login-header { margin-bottom:32px; }
+  .login-title { font-family:'Barlow Condensed',sans-serif; font-size:32px; font-weight:800; letter-spacing:0.02em; text-transform:uppercase; color:var(--black); line-height:1; }
+  .login-title span { color:var(--lime-dark); }
+  .login-sub { font-size:12px; color:var(--muted); margin-top:6px; }
+  .login-card { background:var(--white); border:1px solid var(--border); border-top:3px solid var(--lime); padding:32px; }
+  .field { margin-bottom:20px; }
+  .field label { display:block; font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .field input { width:100%; background:var(--offwhite); border:1px solid var(--border); color:var(--black); font-family:'Barlow',sans-serif; font-size:14px; padding:9px 12px; outline:none; transition:border-color 0.15s; border-radius:3px; }
+  .field input:focus { border-color:var(--lime-dark); background:#fff; }
+  .login-btn { width:100%; background:var(--lime); border:none; color:var(--black); font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; padding:11px; cursor:pointer; margin-top:4px; border-radius:3px; transition:background 0.15s; }
+  .login-btn:hover { background:var(--lime-dark); }
+  .error-msg { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; font-size:12px; padding:10px 12px; margin-bottom:20px; border-radius:3px; display:none; }
+  .error-msg.show { display:block; }
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-header">
+    <div class="login-title">Nights <span>Dashboard</span></div>
+    <div class="login-sub">Warehouse operations - restricted access</div>
+  </div>
+  <div class="login-card">
+    <div class="error-msg" id="err">Incorrect username or password.</div>
+    <form method="POST" action="/login">
+      <div class="field"><label>Username</label><input type="text" name="username" autocomplete="username" required></div>
+      <div class="field"><label>Password</label><input type="password" name="password" autocomplete="current-password" required></div>
+      <button type="submit" class="login-btn">Sign In</button>
+    </form>
+  </div>
+</div>
+<script>if(window.location.search.includes('error=1'))document.getElementById('err').classList.add('show');</script>
+</body>
+</html>

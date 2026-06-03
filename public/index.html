@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixmart - Picking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{--lime:#9ACD00;--lime-dark:#7aaa00;--navy:#1B365D;--black:#1a1a1a;--white:#fff;--offwhite:#f5f5f3;--border:#e0e0e0;--muted:#666;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Barlow',sans-serif;background:var(--offwhite);color:var(--black);}
+  .topbar{background:var(--black);height:52px;display:flex;align-items:center;padding:0 24px;gap:24px;}
+  .topbar-brand{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--white);text-transform:uppercase;letter-spacing:0.05em;}
+  .topbar-brand span{color:var(--lime);}
+  .topbar-nav{display:flex;gap:4px;margin-left:24px;}
+  .nav-link{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:6px 14px;border-radius:3px;transition:all 0.15s;}
+  .nav-link:hover{color:var(--white);background:rgba(255,255,255,0.08);}
+  .nav-link.active{color:var(--black);background:var(--lime);}
+  .topbar-right{margin-left:auto;}
+  .logout-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:5px 12px;border:1px solid #444;border-radius:3px;}
+  .controls{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .ctrl-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+  .btn-group{display:flex;}
+  .btn-group button{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--border);background:var(--white);cursor:pointer;color:var(--muted);transition:all 0.15s;}
+  .btn-group button:first-child{border-radius:3px 0 0 3px;}
+  .btn-group button:last-child{border-radius:0 3px 3px 0;}
+  .btn-group button:not(:first-child){border-left:none;}
+  .btn-group button.active{background:var(--navy);color:var(--white);border-color:var(--navy);}
+  .date-input{font-family:'Barlow',sans-serif;font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:3px;background:var(--white);}
+  .apply-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--lime);border:none;border-radius:3px;cursor:pointer;}
+  .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:20px 24px;}
+  .kpi-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--lime);padding:16px 18px;}
+  .kpi-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;line-height:1;}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+  .content{padding:0 24px 32px;}
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:24px 0 12px;}
+  .section-title span{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px;text-transform:none;letter-spacing:0;}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
+  .chart-panel{background:var(--white);border:1px solid var(--border);padding:20px;}
+  .chart-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  .chart-wrap{position:relative;height:280px;}
+  .table-wrap{background:var(--white);border:1px solid var(--border);overflow:auto;margin-bottom:24px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--offwhite);white-space:nowrap;}
+  th.num{text-align:right;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#fafafa;}
+  .shift-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;}
+  .shift-night{background:#1B365D;color:#fff;}
+  .shift-day{background:#e0e7ef;color:#1B365D;}
+  .bar-cell{display:flex;align-items:center;gap:8px;}
+  .bar{height:6px;background:var(--navy);border-radius:2px;min-width:2px;}
+  .bar-day{background:#9ACD00;}
+  .loading{text-align:center;padding:60px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+  .error-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:16px 20px;font-size:13px;margin:20px 24px;border-radius:3px;display:none;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-brand">Fixmart <span>Nights</span></div>
+  <nav class="topbar-nav">
+    <a href="/" class="nav-link active">Picking</a>
+    <a href="/packing.html" class="nav-link">Packing</a>
+    <a href="/goodsin.html" class="nav-link">Goods In</a>
+  </nav>
+  <div class="topbar-right"><a href="/logout" class="logout-btn">Sign Out</a></div>
+</div>
+<div class="controls">
+  <span class="ctrl-label">Period</span>
+  <div class="btn-group" id="periodBtns">
+    <button data-days="7">7d</button><button data-days="14">14d</button><button data-days="31" class="active">31d</button>
+  </div>
+  <span class="ctrl-label" style="margin-left:8px">Custom</span>
+  <input type="date" class="date-input" id="startDate">
+  <span style="color:var(--muted);font-size:12px">to</span>
+  <input type="date" class="date-input" id="endDate">
+  <button class="apply-btn" onclick="applyCustom()">Apply</button>
+  <span class="ctrl-label" style="margin-left:8px">Shift</span>
+  <div class="btn-group" id="shiftBtns">
+    <button data-shift="all" class="active">All</button><button data-shift="night">Night</button><button data-shift="day">Day</button>
+  </div>
+</div>
+<div class="error-box" id="errorBox"></div>
+<div class="kpi-strip">
+  <div class="kpi-card"><div class="kpi-label">Total Lines</div><div class="kpi-value" id="kpiLines">--</div><div class="kpi-sub">picked</div></div>
+  <div class="kpi-card"><div class="kpi-label">Total Orders</div><div class="kpi-value" id="kpiOrders">--</div><div class="kpi-sub">distinct</div></div>
+  <div class="kpi-card"><div class="kpi-label">Total Weight</div><div class="kpi-value" id="kpiWeight">--</div><div class="kpi-sub">kg</div></div>
+  <div class="kpi-card"><div class="kpi-label">Night Lines</div><div class="kpi-value" id="kpiNightLines">--</div><div class="kpi-sub">this period</div></div>
+  <div class="kpi-card"><div class="kpi-label">Night Orders</div><div class="kpi-value" id="kpiNightOrders">--</div><div class="kpi-sub">this period</div></div>
+  <div class="kpi-card"><div class="kpi-label">Active Pickers</div><div class="kpi-value" id="kpiPickers">--</div><div class="kpi-sub">this period</div></div>
+</div>
+<div class="content">
+  <div class="chart-grid">
+    <div class="chart-panel"><div class="chart-panel-title">Lines Per Shift - Night vs Day</div><div class="chart-wrap"><canvas id="chartLines"></canvas></div></div>
+    <div class="chart-panel"><div class="chart-panel-title">Orders Per Shift - Night vs Day</div><div class="chart-wrap"><canvas id="chartOrders"></canvas></div></div>
+    <div class="chart-panel"><div class="chart-panel-title">Weight Per Shift (kg) - Night vs Day</div><div class="chart-wrap"><canvas id="chartWeight"></canvas></div></div>
+  </div>
+  <div class="section-title">Per-Person Breakdown <span>sorted by total lines descending</span></div>
+  <div id="tableWrap" class="table-wrap"><div class="loading">Loading picking data...</div></div>
+</div>
+<script>
+let days=31,shift='all',cStart=null,cEnd=null,charts={};
+const fmt=n=>n==null?'--':Number(n).toLocaleString('en-GB',{maximumFractionDigits:1});
+document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;load();}));
+document.querySelectorAll('#shiftBtns button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#shiftBtns button').forEach(x=>x.classList.remove('active'));b.classList.add('active');shift=b.dataset.shift;load();}));
+function applyCustom(){const s=document.getElementById('startDate').value,e=document.getElementById('endDate').value;if(!s||!e)return;cStart=s;cEnd=e;document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));load();}
+function url(){return cStart&&cEnd?'/api/picking?startDate='+cStart+'&endDate='+cEnd+'&shift='+shift:'/api/picking?days='+days+'&shift='+shift;}
+async function load(){
+  document.getElementById('tableWrap').innerHTML='<div class="loading">Loading picking data...</div>';
+  try{
+    const j=await(await fetch(url())).json();
+    if(!j.success)throw new Error(j.error);
+    render(j.data);
+  }catch(e){const b=document.getElementById('errorBox');b.textContent='Error: '+e.message;b.style.display='block';}
+}
+function render(rows){
+  let tL=0,tO=0,tW=0,nL=0,nO=0;const pks=new Set();
+  rows.forEach(r=>{tL+=+r.total_lines||0;tO+=+r.total_orders||0;tW+=+r.total_weight_kg||0;pks.add(r.picker_name);if(r.shift==='Night'){nL+=+r.total_lines||0;nO+=+r.total_orders||0;}});
+  document.getElementById('kpiLines').textContent=fmt(tL);
+  document.getElementById('kpiOrders').textContent=fmt(tO);
+  document.getElementById('kpiWeight').textContent=fmt(Math.round(tW));
+  document.getElementById('kpiNightLines').textContent=fmt(nL);
+  document.getElementById('kpiNightOrders').textContent=fmt(nO);
+  document.getElementById('kpiPickers').textContent=pks.size;
+  const by={};
+  rows.forEach(r=>{if(!by[r.picker_name])by[r.picker_name]={};by[r.picker_name][r.shift==='Night'?'night':'day']=r;});
+  const sorted=Object.entries(by).sort((a,b)=>((+b[1].night?.total_lines||0)+(+b[1].day?.total_lines||0))-((+a[1].night?.total_lines||0)+(+a[1].day?.total_lines||0)));
+  const names=sorted.map(([n])=>n);
+  mkChart('chartLines',names,sorted.map(([,v])=>+v.night?.lines_per_shift||0),sorted.map(([,v])=>+v.day?.lines_per_shift||0));
+  mkChart('chartOrders',names,sorted.map(([,v])=>+v.night?.orders_per_shift||0),sorted.map(([,v])=>+v.day?.orders_per_shift||0));
+  mkChart('chartWeight',names,sorted.map(([,v])=>+v.night?.weight_per_shift||0),sorted.map(([,v])=>+v.day?.weight_per_shift||0));
+  const mx=Math.max(...sorted.map(([,v])=>Math.max(+v.night?.total_lines||0,+v.day?.total_lines||0)));
+  let h='<table><thead><tr><th>Picker</th><th>Shift</th><th class="num">Lines</th><th class="num">Orders</th><th class="num">Weight kg</th><th class="num">Lines/Shift</th><th class="num">Orders/Shift</th><th class="num">kg/Shift</th><th class="num">Shifts</th></tr></thead><tbody>';
+  sorted.forEach(([name,v])=>['Night','Day'].forEach(s=>{
+    const d=s==='Night'?v.night:v.day;if(!d)return;
+    const bp=mx>0?Math.round((+d.total_lines||0)/mx*120):0;
+    h+='<tr><td>'+name+'</td><td><span class="shift-badge '+(s==='Night'?'shift-night':'shift-day')+'">'+s+'</span></td>';
+    h+='<td class="num"><div class="bar-cell"><div class="bar '+(s==='Night'?'':'bar-day')+'" style="width:'+bp+'px"></div>'+fmt(d.total_lines)+'</div></td>';
+    h+='<td class="num">'+fmt(d.total_orders)+'</td><td class="num">'+fmt(d.total_weight_kg)+'</td><td class="num">'+fmt(d.lines_per_shift)+'</td><td class="num">'+fmt(d.orders_per_shift)+'</td><td class="num">'+fmt(d.weight_per_shift)+'</td><td class="num">'+fmt(d.shift_days)+'</td></tr>';
+  }));
+  document.getElementById('tableWrap').innerHTML=h+'</tbody></table>';
+}
+function mkChart(id,labels,night,day){
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{label:'Night',data:night,backgroundColor:'#1B365D'},{label:'Day',data:day,backgroundColor:'#9ACD00'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Barlow',size:11},boxWidth:10}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Barlow',size:9},maxRotation:45}},y:{grid:{color:'#f0f0f0'},border:{display:false},ticks:{font:{family:'Barlow',size:10}}}}}});
+}
+const now=new Date(),e=now.toISOString().slice(0,10),s=new Date(now);s.setDate(s.getDate()-31);
+document.getElementById('endDate').value=e;document.getElementById('startDate').value=s.toISOString().slice(0,10);
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixmart - Goods In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--lime:#9ACD00;--lime-dark:#7aaa00;--navy:#1B365D;--black:#1a1a1a;--white:#fff;--offwhite:#f5f5f3;--border:#e0e0e0;--muted:#666;--red:#dc2626;--amber:#d97706;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Barlow',sans-serif;background:var(--offwhite);color:var(--black);}
+  .topbar{background:var(--black);height:52px;display:flex;align-items:center;padding:0 24px;gap:24px;}
+  .topbar-brand{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--white);text-transform:uppercase;letter-spacing:0.05em;}
+  .topbar-brand span{color:var(--lime);}
+  .topbar-nav{display:flex;gap:4px;margin-left:24px;}
+  .nav-link{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:6px 14px;border-radius:3px;transition:all 0.15s;}
+  .nav-link:hover{color:var(--white);background:rgba(255,255,255,0.08);}
+  .nav-link.active{color:var(--black);background:var(--lime);}
+  .topbar-right{margin-left:auto;}
+  .logout-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:5px 12px;border:1px solid #444;border-radius:3px;}
+  .controls{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .ctrl-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+  .btn-group{display:flex;}
+  .btn-group button{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--border);background:var(--white);cursor:pointer;color:var(--muted);}
+  .btn-group button:first-child{border-radius:3px 0 0 3px;}
+  .btn-group button:last-child{border-radius:0 3px 3px 0;}
+  .btn-group button:not(:first-child){border-left:none;}
+  .btn-group button.active{background:var(--navy);color:var(--white);border-color:var(--navy);}
+  .date-input{font-family:'Barlow',sans-serif;font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:3px;background:var(--white);}
+  .apply-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--lime);border:none;border-radius:3px;cursor:pointer;}
+  .kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px 24px;}
+  .kpi-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--lime);padding:16px 18px;}
+  .kpi-card.alert{border-top-color:var(--red);}
+  .kpi-card.amber{border-top-color:var(--amber);}
+  .kpi-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;line-height:1;}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+  .content{padding:0 24px 32px;}
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:24px 0 12px;}
+  .section-title span{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px;text-transform:none;letter-spacing:0;}
+  .table-wrap{background:var(--white);border:1px solid var(--border);overflow:auto;margin-bottom:24px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--offwhite);white-space:nowrap;}
+  th.num{text-align:right;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#fafafa;}
+  .overdue{color:var(--red);font-weight:600;}
+  .due-today{color:var(--amber);font-weight:600;}
+  .status-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:var(--offwhite);color:var(--muted);}
+  .loading{text-align:center;padding:60px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+  .error-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:16px 20px;font-size:13px;margin:20px 24px;border-radius:3px;display:none;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-brand">Fixmart <span>Nights</span></div>
+  <nav class="topbar-nav">
+    <a href="/" class="nav-link">Picking</a>
+    <a href="/packing.html" class="nav-link">Packing</a>
+    <a href="/goodsin.html" class="nav-link active">Goods In</a>
+  </nav>
+  <div class="topbar-right"><a href="/logout" class="logout-btn">Sign Out</a></div>
+</div>
+<div class="controls">
+  <span class="ctrl-label">Period</span>
+  <div class="btn-group" id="periodBtns">
+    <button data-days="7">7d</button><button data-days="14">14d</button><button data-days="31" class="active">31d</button>
+  </div>
+  <span class="ctrl-label" style="margin-left:8px">Custom</span>
+  <input type="date" class="date-input" id="startDate">
+  <span style="color:var(--muted);font-size:12px">to</span>
+  <input type="date" class="date-input" id="endDate">
+  <button class="apply-btn" onclick="applyCustom()">Apply</button>
+</div>
+<div class="error-box" id="errorBox"></div>
+<div class="kpi-strip">
+  <div class="kpi-card"><div class="kpi-label">Lines Received</div><div class="kpi-value" id="kpiLines">--</div><div class="kpi-sub">GRN lines</div></div>
+  <div class="kpi-card"><div class="kpi-label">Units Received</div><div class="kpi-value" id="kpiUnits">--</div><div class="kpi-sub">total qty</div></div>
+  <div class="kpi-card"><div class="kpi-label">Weight Received</div><div class="kpi-value" id="kpiWeight">--</div><div class="kpi-sub">kg</div></div>
+  <div class="kpi-card alert"><div class="kpi-label">Overdue POs</div><div class="kpi-value" id="kpiOverdue">--</div><div class="kpi-sub">past required date</div></div>
+  <div class="kpi-card amber"><div class="kpi-label">Open PO Lines</div><div class="kpi-value" id="kpiOutstanding">--</div><div class="kpi-sub">qty outstanding</div></div>
+</div>
+<div class="content">
+  <div class="section-title">Goods In Productivity <span>by operative, sorted by lines received</span></div>
+  <div id="productivityWrap" class="table-wrap"><div class="loading">Loading goods in data...</div></div>
+  <div class="section-title">Outstanding Purchase Orders <span>open lines ordered by required date</span></div>
+  <div id="outstandingWrap" class="table-wrap"><div class="loading">Loading outstanding POs...</div></div>
+</div>
+<script>
+let days=31,cStart=null,cEnd=null;
+const fmt=n=>n==null?'--':Number(n).toLocaleString('en-GB',{maximumFractionDigits:1});
+const fmtDate=s=>{if(!s)return '--';return new Date(s).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+const isOverdue=s=>s&&new Date(s)<new Date(new Date().toDateString());
+const isDueToday=s=>s&&new Date(s).toDateString()===new Date().toDateString();
+document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));b.classList.add('active');days=parseInt(b.dataset.days);cStart=null;cEnd=null;loadProductivity();}));
+function applyCustom(){const s=document.getElementById('startDate').value,e=document.getElementById('endDate').value;if(!s||!e)return;cStart=s;cEnd=e;document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));loadProductivity();}
+function url(){return cStart&&cEnd?'/api/goodsin?startDate='+cStart+'&endDate='+cEnd:'/api/goodsin?days='+days;}
+async function loadProductivity(){
+  document.getElementById('productivityWrap').innerHTML='<div class="loading">Loading goods in data...</div>';
+  try{
+    const j=await(await fetch(url())).json();if(!j.success)throw new Error(j.error);
+    const rows=j.data;
+    let tL=0,tU=0,tW=0;const by={};
+    rows.forEach(r=>{tL+=+r.lines_received||0;tU+=+r.units_received||0;tW+=+r.weight_kg||0;if(!by[r.operative])by[r.operative]={lines:0,units:0,weight:0,days:new Set()};by[r.operative].lines+=+r.lines_received||0;by[r.operative].units+=+r.units_received||0;by[r.operative].weight+=+r.weight_kg||0;by[r.operative].days.add(r.grn_date);});
+    document.getElementById('kpiLines').textContent=fmt(tL);
+    document.getElementById('kpiUnits').textContent=fmt(tU);
+    document.getElementById('kpiWeight').textContent=fmt(Math.round(tW));
+    const sorted=Object.entries(by).sort((a,b)=>b[1].lines-a[1].lines);
+    let h='<table><thead><tr><th>Operative</th><th class="num">Lines</th><th class="num">Units</th><th class="num">Weight (kg)</th><th class="num">Days Active</th><th class="num">Lines/Day</th></tr></thead><tbody>';
+    sorted.forEach(([op,v])=>{h+='<tr><td>'+op+'</td><td class="num">'+fmt(v.lines)+'</td><td class="num">'+fmt(v.units)+'</td><td class="num">'+fmt(Math.round(v.weight))+'</td><td class="num">'+v.days.size+'</td><td class="num">'+fmt(Math.round(v.lines/v.days.size))+'</td></tr>';});
+    document.getElementById('productivityWrap').innerHTML=h+'</tbody></table>';
+  }catch(e){document.getElementById('errorBox').textContent='Error: '+e.message;document.getElementById('errorBox').style.display='block';}
+}
+async function loadOutstanding(){
+  try{
+    const j=await(await fetch('/api/goodsin-outstanding')).json();if(!j.success)throw new Error(j.error);
+    const rows=j.data;
+    const overduePOs=new Set(rows.filter(r=>isOverdue(r.required_date)).map(r=>r.po_number));
+    const totalOutstanding=rows.reduce((s,r)=>s+(+r.qty_outstanding||0),0);
+    document.getElementById('kpiOverdue').textContent=overduePOs.size;
+    document.getElementById('kpiOutstanding').textContent=fmt(totalOutstanding);
+    let h='<table><thead><tr><th>PO</th><th>Supplier</th><th>SKU</th><th>Description</th><th class="num">Ordered</th><th class="num">Received</th><th class="num">Outstanding</th><th class="num">Weight kg</th><th>Required</th><th>Status</th></tr></thead><tbody>';
+    rows.forEach(r=>{
+      const od=isOverdue(r.required_date),dt=isDueToday(r.required_date);
+      const dc=od?'overdue':dt?'due-today':'';
+      h+='<tr><td>'+r.po_number+'</td><td>'+r.supplier+'</td><td>'+r.sku+'</td><td>'+r.description+'</td>';
+      h+='<td class="num">'+fmt(r.qty_ordered)+'</td><td class="num">'+fmt(r.qty_received)+'</td><td class="num">'+fmt(r.qty_outstanding)+'</td>';
+      h+='<td class="num">'+fmt(r.weight_outstanding_kg)+'</td><td class="'+dc+'">'+fmtDate(r.required_date)+'</td>';
+      h+='<td><span class="status-badge">'+r.status+'</span></td></tr>';
+    });
+    document.getElementById('outstandingWrap').innerHTML=h+'</tbody></table>';
+  }catch(e){document.getElementById('errorBox').textContent='Outstanding error: '+e.message;document.getElementById('errorBox').style.display='block';}
+}
+const now=new Date(),e=now.toISOString().slice(0,10),s=new Date(now);s.setDate(s.getDate()-31);
+document.getElementById('endDate').value=e;document.getElementById('startDate').value=s.toISOString().slice(0,10);
+loadProductivity();
+loadOutstanding();
+</script>
+</body>
+</html>

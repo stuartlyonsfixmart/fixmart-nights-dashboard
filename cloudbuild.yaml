@@ -1,0 +1,16 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/fixmart-nights-dashboard', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/fixmart-nights-dashboard']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - fixmart-nights-dashboard
+      - --image=gcr.io/$PROJECT_ID/fixmart-nights-dashboard
+      - --region=europe-west2
+      - --platform=managed
+      - --allow-unauthenticated
+      - --min-instances=1
