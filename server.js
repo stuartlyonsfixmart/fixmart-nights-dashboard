@@ -74,7 +74,107 @@ function shiftFilter(shift, tsCol) {
   return '';
 }
 
-// PICKING - pick_end_time is STRING with possible NaT values
+// SHIFT CLASSIFICATION
+// Fixed 90-day lookback regardless of display date range.
+// Night = >=85% of picks/packs fall in 20:00-06:00 window.
+// Day = >=85% fall in 06:00-20:00. Both = neither threshold met.
+app.get('/api/shift-classification', async (req, res) => {
+  const type = req.query.type || 'picking';
+  const cacheKey = 'shift_class_' + type;
+  const cached = cache.get(cacheKey);
+  if (cached) return res.json({ success: true, data: cached, cached: true });
+
+  const now = new Date();
+  const endDate = now.toISOString().slice(0, 10);
+  const start = new Date(now);
+  start.setDate(start.getDate() - 90);
+  const startDate = start.toISOString().slice(0, 10);
+
+  let query;
+  if (type === 'picking') {
+    query = [
+      'WITH clean AS (',
+      '  SELECT ph.pick_pic_id,',
+      "    SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E6S', ph.pick_end_time) AS end_ts",
+      '  FROM `' + P + '.fixmart_bi.pick_header` ph',
+      '  WHERE ph.pick_end_time IS NOT NULL',
+      "    AND ph.pick_end_time NOT LIKE '%NaT%'",
+      '    AND LENGTH(ph.pick_end_time) > 10',
+      '    AND ph.pick_end_time >= @startDate',
+      '),',
+      'counts AS (',
+      '  SELECT pi.pic_name AS person,',
+      '    COUNTIF(EXTRACT(HOUR FROM c.end_ts) >= 20 OR EXTRACT(HOUR FROM c.end_ts) < 6) AS night_count,',
+      '    COUNTIF(EXTRACT(HOUR FROM c.end_ts) >= 6 AND EXTRACT(HOUR FROM c.end_ts) < 20) AS day_count,',
+      '    COUNT(*) AS total',
+      '  FROM clean c',
+      '  JOIN `' + P + '.fixmart_bi.picker` pi ON pi.pic_id = c.pick_pic_id',
+      '  WHERE c.end_ts IS NOT NULL',
+      '    AND pi.pic_active = TRUE',
+      '    AND pi.pic_name NOT IN ("Default picker", "Not Working")',
+      '  GROUP BY 1',
+      ')',
+      'SELECT person,',
+      '  night_count, day_count, total,',
+      '  ROUND(SAFE_DIVIDE(night_count, total) * 100, 1) AS pct_night,',
+      '  ROUND(SAFE_DIVIDE(day_count, total) * 100, 1) AS pct_day,',
+      '  CASE',
+      '    WHEN SAFE_DIVIDE(night_count, total) >= 0.85 THEN "Night"',
+      '    WHEN SAFE_DIVIDE(day_count, total) >= 0.85 THEN "Day"',
+      '    ELSE "Both"',
+      '  END AS classification',
+      'FROM counts',
+      'ORDER BY person'
+    ].join('\n');
+  } else {
+    query = [
+      'WITH counts AS (',
+      '  SELECT pac.pac_name AS person,',
+      '    COUNTIF(EXTRACT(HOUR FROM pack.pack_end_time) >= 20 OR EXTRACT(HOUR FROM pack.pack_end_time) < 6) AS night_count,',
+      '    COUNTIF(EXTRACT(HOUR FROM pack.pack_end_time) >= 6 AND EXTRACT(HOUR FROM pack.pack_end_time) < 20) AS day_count,',
+      '    COUNT(*) AS total',
+      '  FROM `' + P + '.fixmart_bi.pack_header` pack',
+      '  JOIN `' + P + '.fixmart_bi.packer` pac ON pac.pac_id = pack.pack_pac_id',
+      '  WHERE pack.pack_end_time IS NOT NULL',
+      '    AND DATE(pack.pack_end_time) >= @startDate',
+      '    AND pac.pac_active = TRUE',
+      '    AND pac.pac_name NOT IN ("Default packer", "Not Working")',
+      '  GROUP BY 1',
+      ')',
+      'SELECT person,',
+      '  night_count, day_count, total,',
+      '  ROUND(SAFE_DIVIDE(night_count, total) * 100, 1) AS pct_night,',
+      '  ROUND(SAFE_DIVIDE(day_count, total) * 100, 1) AS pct_day,',
+      '  CASE',
+      '    WHEN SAFE_DIVIDE(night_count, total) >= 0.85 THEN "Night"',
+      '    WHEN SAFE_DIVIDE(day_count, total) >= 0.85 THEN "Day"',
+      '    ELSE "Both"',
+      '  END AS classification',
+      'FROM counts',
+      'ORDER BY person'
+    ].join('\n');
+  }
+
+  try {
+    const [rows] = await bigquery.query({ query, params: { startDate }, location: LOC });
+    const result = rows.map(r => ({
+      person: r.person,
+      night_count: r.night_count,
+      day_count: r.day_count,
+      total: r.total,
+      pct_night: r.pct_night,
+      pct_day: r.pct_day,
+      classification: r.classification
+    }));
+    cache.set(cacheKey, result);
+    res.json({ success: true, data: result, cached: false });
+  } catch (err) {
+    console.error('Classification error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// PICKING
 app.get('/api/picking', async (req, res) => {
   const { startDate, endDate } = dateRange(req.query);
   const shift = req.query.shift || 'all';
@@ -134,7 +234,7 @@ app.get('/api/picking', async (req, res) => {
   }
 });
 
-// PACKING - pack_end_time is already a TIMESTAMP type, no string cleaning needed
+// PACKING
 app.get('/api/packing', async (req, res) => {
   const { startDate, endDate } = dateRange(req.query);
   const shift = req.query.shift || 'all';
@@ -189,7 +289,7 @@ app.get('/api/packing', async (req, res) => {
   }
 });
 
-// PICKING TRENDS - daily breakdown per picker
+// PICKING TRENDS
 app.get('/api/picking-trends', async (req, res) => {
   const { startDate, endDate } = dateRange(req.query);
   const shift = req.query.shift || 'all';
@@ -227,8 +327,7 @@ app.get('/api/picking-trends', async (req, res) => {
     '  GROUP BY 1, 2, 3',
     ')',
     'SELECT person, shift_date, shift, lines, orders, weight_kg',
-    'FROM daily',
-    'ORDER BY shift_date, person'
+    'FROM daily ORDER BY shift_date, person'
   ];
 
   try {
@@ -236,10 +335,7 @@ app.get('/api/picking-trends', async (req, res) => {
     const serialised = rows.map(r => ({
       person: r.person,
       shift_date: r.shift_date ? (r.shift_date.value || String(r.shift_date)).slice(0, 10) : null,
-      shift: r.shift,
-      lines: r.lines,
-      orders: r.orders,
-      weight_kg: r.weight_kg
+      shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg
     }));
     cache.set(cacheKey, serialised);
     res.json({ success: true, data: serialised, cached: false });
@@ -249,7 +345,7 @@ app.get('/api/picking-trends', async (req, res) => {
   }
 });
 
-// PACKING TRENDS - daily breakdown per packer
+// PACKING TRENDS
 app.get('/api/packing-trends', async (req, res) => {
   const { startDate, endDate } = dateRange(req.query);
   const shift = req.query.shift || 'all';
@@ -281,8 +377,7 @@ app.get('/api/packing-trends', async (req, res) => {
     '  GROUP BY 1, 2, 3',
     ')',
     'SELECT person, shift_date, shift, lines, orders, weight_kg',
-    'FROM daily',
-    'ORDER BY shift_date, person'
+    'FROM daily ORDER BY shift_date, person'
   ];
 
   try {
@@ -290,10 +385,7 @@ app.get('/api/packing-trends', async (req, res) => {
     const serialised = rows.map(r => ({
       person: r.person,
       shift_date: r.shift_date ? (r.shift_date.value || String(r.shift_date)).slice(0, 10) : null,
-      shift: r.shift,
-      lines: r.lines,
-      orders: r.orders,
-      weight_kg: r.weight_kg
+      shift: r.shift, lines: r.lines, orders: r.orders, weight_kg: r.weight_kg
     }));
     cache.set(cacheKey, serialised);
     res.json({ success: true, data: serialised, cached: false });
@@ -311,20 +403,15 @@ app.get('/api/goodsin', async (req, res) => {
   if (cached) return res.json({ success: true, data: cached, cached: true });
 
   const query = [
-    'SELECT',
-    '  im.UserName AS operative,',
-    '  DATE(im.vth_transaction_datetime) AS grn_date,',
-    '  COUNT(*) AS lines_received,',
-    '  SUM(im.Quantity) AS units_received,',
+    'SELECT im.UserName AS operative, DATE(im.vth_transaction_datetime) AS grn_date,',
+    '  COUNT(*) AS lines_received, SUM(im.Quantity) AS units_received,',
     '  ROUND(SUM(im.Quantity * COALESCE(vd.vad_weight, 0)), 1) AS weight_kg',
     'FROM `' + P + '.fixmart_bi.inventory_movements` im',
     'LEFT JOIN `' + P + '.fixmart_bi.variant_detail` vd ON vd.vad_id = im.VariantID',
-    'WHERE im.HeaderIncomingStockFlag = TRUE',
-    '  AND im.GRN_ID IS NOT NULL',
+    'WHERE im.HeaderIncomingStockFlag = TRUE AND im.GRN_ID IS NOT NULL',
     '  AND DATE(im.vth_transaction_datetime) BETWEEN @startDate AND @endDate',
     '  AND im.UserName IS NOT NULL',
-    'GROUP BY 1, 2',
-    'ORDER BY grn_date DESC, lines_received DESC'
+    'GROUP BY 1, 2 ORDER BY grn_date DESC, lines_received DESC'
   ].join('\n');
 
   try {
@@ -344,16 +431,11 @@ app.get('/api/goodsin-outstanding', async (req, res) => {
   if (cached) return res.json({ success: true, data: cached, cached: true });
 
   const query = [
-    'SELECT',
-    '  poh.poh_order_number AS po_number,',
-    '  cd.cd_name AS supplier,',
-    '  poh.poh_required_date AS required_date,',
-    '  poh.poh_promised_date AS promised_date,',
-    '  poh.pos_status AS status,',
-    '  vd.vad_variant_code AS sku,',
+    'SELECT poh.poh_order_number AS po_number, cd.cd_name AS supplier,',
+    '  poh.poh_required_date AS required_date, poh.poh_promised_date AS promised_date,',
+    '  poh.pos_status AS status, vd.vad_variant_code AS sku,',
     '  pol.pol_vad_description AS description,',
-    '  pol.pol_qty_ordered AS qty_ordered,',
-    '  pol.pol_qty_received AS qty_received,',
+    '  pol.pol_qty_ordered AS qty_ordered, pol.pol_qty_received AS qty_received,',
     '  (pol.pol_qty_ordered - pol.pol_qty_received) AS qty_outstanding,',
     '  ROUND((pol.pol_qty_ordered - pol.pol_qty_received) * COALESCE(vd.vad_weight, 0), 1) AS weight_outstanding_kg,',
     '  ROUND((pol.pol_qty_ordered - pol.pol_qty_received) * pol.pol_item_net, 2) AS value_outstanding',
@@ -369,15 +451,11 @@ app.get('/api/goodsin-outstanding', async (req, res) => {
   try {
     const [rows] = await bigquery.query({ query, location: LOC });
     const serialised = rows.map(r => ({
-      po_number: r.po_number,
-      supplier: r.supplier || 'Unknown',
+      po_number: r.po_number, supplier: r.supplier || 'Unknown',
       required_date: r.required_date ? (r.required_date.value || String(r.required_date)).slice(0, 10) : null,
       promised_date: r.promised_date ? (r.promised_date.value || String(r.promised_date)).slice(0, 10) : null,
-      status: r.status,
-      sku: r.sku,
-      description: r.description,
-      qty_ordered: r.qty_ordered,
-      qty_received: r.qty_received,
+      status: r.status, sku: r.sku, description: r.description,
+      qty_ordered: r.qty_ordered, qty_received: r.qty_received,
       qty_outstanding: r.qty_outstanding,
       weight_outstanding_kg: r.weight_outstanding_kg,
       value_outstanding: r.value_outstanding
