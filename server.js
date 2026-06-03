@@ -54,6 +54,11 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve Chart.js from node_modules - avoids CDN tracking prevention in Edge
+app.get('/chart.min.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'node_modules', 'chart.js', 'dist', 'chart.umd.min.js'));
+});
+
 function dateRange(q) {
   if (q.startDate && q.endDate) return { startDate: q.startDate, endDate: q.endDate };
   const days = parseInt(q.days) || 31;
