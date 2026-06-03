@@ -31,23 +31,31 @@
   .date-input{font-family:'Barlow',sans-serif;font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:3px;background:var(--white);}
   .apply-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:var(--lime);border:none;border-radius:3px;cursor:pointer;}
   .content{padding:20px 24px 32px;}
-  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 16px;}
-  .section-title span{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px;text-transform:none;letter-spacing:0;}
   .subtabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);}
   .subtab{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:10px 20px;cursor:pointer;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;}
   .subtab.active{color:var(--navy);border-bottom-color:var(--navy);}
+  /* TEAM COMPARISON */
+  .team-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
   .chart-panel{background:var(--white);border:1px solid var(--border);padding:20px;margin-bottom:16px;}
-  .chart-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
-  .chart-wrap{position:relative;height:300px;}
-  .chart-wrap-tall{position:relative;}
+  .chart-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .chart-panel-sub{font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .chart-wrap{position:relative;height:220px;}
+  .chart-wrap-lg{position:relative;height:300px;}
+  /* CLASSIFICATION NOTICE */
+  .class-notice{background:#f0f4ff;border:1px solid #c7d4f0;border-left:3px solid var(--navy);padding:10px 16px;font-size:12px;color:#333;margin-bottom:20px;line-height:1.5;}
+  .class-notice strong{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--navy);display:block;margin-bottom:4px;}
+  /* BADGES */
+  .badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:2px;margin-left:6px;}
+  .badge-night{background:#1B365D;color:#fff;}
+  .badge-day{background:#e0e7ef;color:#1B365D;}
+  .badge-both{background:#f5f5f3;color:#666;border:1px solid #ddd;}
   /* HEATMAP */
   .heatmap-wrap{background:var(--white);border:1px solid var(--border);padding:20px;margin-bottom:16px;overflow-x:auto;}
-  .heatmap-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
-  .heatmap-grid{display:grid;gap:2px;}
-  .heatmap-cell{height:24px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;color:rgba(255,255,255,0.8);cursor:default;}
-  .heatmap-label{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;height:24px;padding-right:8px;}
-  .heatmap-date{font-family:'Barlow Condensed',sans-serif;font-size:9px;color:var(--muted);text-align:center;transform:rotate(-45deg);transform-origin:center;white-space:nowrap;}
-  /* SPARKLINE TABLE */
+  .heatmap-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .heatmap-sub{font-size:11px;color:var(--muted);margin-bottom:14px;}
+  /* TABLE */
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 12px;}
+  .section-title span{color:var(--muted);font-weight:600;font-size:13px;margin-left:8px;text-transform:none;letter-spacing:0;}
   .table-wrap{background:var(--white);border:1px solid var(--border);overflow:auto;margin-bottom:24px;}
   table{width:100%;border-collapse:collapse;font-size:13px;}
   th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--offwhite);white-space:nowrap;}
@@ -56,7 +64,6 @@
   td.num{text-align:right;font-variant-numeric:tabular-nums;}
   tr:last-child td{border-bottom:none;}
   tr:hover td{background:#fafafa;}
-  .sparkline-cell canvas{display:block;}
   .loading{text-align:center;padding:60px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
   .error-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:16px 20px;font-size:13px;margin-bottom:16px;border-radius:3px;display:none;}
 </style>
@@ -101,12 +108,12 @@
 </div>
 <script>
 let days=31,shift='all',metric='lines',sub='picking',cStart=null,cEnd=null;
-let allData=null;
-let dailyChart=null;
-let sparkCharts={};
+let allData=null,classification={};
+let chartInstances={};
 
 const fmt=n=>n==null?'--':Number(n).toLocaleString('en-GB',{maximumFractionDigits:1});
 const metricLabel={'lines':'Lines','orders':'Orders','weight_kg':'Weight (kg)'};
+const metricUnit={'lines':'lines','orders':'orders','weight_kg':'kg'};
 
 document.querySelectorAll('#periodBtns button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));
@@ -123,48 +130,73 @@ document.querySelectorAll('#metricBtns button').forEach(b=>b.addEventListener('c
 function setSub(s){sub=s;document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));document.querySelector('[data-sub="'+s+'"]').classList.add('active');load();}
 function applyCustom(){const s=document.getElementById('startDate').value,e=document.getElementById('endDate').value;if(!s||!e)return;cStart=s;cEnd=e;document.querySelectorAll('#periodBtns button').forEach(x=>x.classList.remove('active'));load();}
 function apiUrl(){const ep=sub==='picking'?'/api/picking-trends':'/api/packing-trends';return cStart&&cEnd?ep+'?startDate='+cStart+'&endDate='+cEnd+'&shift='+shift:ep+'?days='+days+'&shift='+shift;}
+function classUrl(){return '/api/shift-classification?type='+(sub==='picking'?'picking':'packing');}
+
+function destroyCharts(){Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});chartInstances={};}
 
 async function load(){
   document.getElementById('mainContent').innerHTML='<div class="loading">Loading trends...</div>';
   document.getElementById('errorBox').style.display='none';
-  allData=null;dailyChart=null;sparkCharts={};
+  allData=null;destroyCharts();
   try{
-    const j=await(await fetch(apiUrl())).json();
-    if(!j.success)throw new Error(j.error);
-    allData=j.data;
+    const [tj,cj]=await Promise.all([fetch(apiUrl()).then(r=>r.json()),fetch(classUrl()).then(r=>r.json())]);
+    if(!tj.success)throw new Error(tj.error);
+    allData=tj.data;
+    // Build classification lookup
+    classification={};
+    if(cj.success)cj.data.forEach(r=>{classification[r.person]={cls:r.classification,pct_night:r.pct_night,pct_day:r.pct_day};});
     render(allData);
   }catch(e){document.getElementById('errorBox').textContent='Error: '+e.message;document.getElementById('errorBox').style.display='block';document.getElementById('mainContent').innerHTML='';}
 }
 
 function render(rows){
-  // Collect all dates and people
+  // Filter by shift classification if shift filter is night or day
+  let filteredRows=rows;
+  if(shift==='night') filteredRows=rows.filter(r=>classification[r.person]?.cls==='Night'||classification[r.person]?.cls==='Both');
+  if(shift==='day') filteredRows=rows.filter(r=>classification[r.person]?.cls==='Day'||classification[r.person]?.cls==='Both');
+
   const dateSet=new Set();const peopleSet=new Set();
-  rows.forEach(r=>{if(r.shift_date)dateSet.add(r.shift_date);peopleSet.add(r.person);});
+  filteredRows.forEach(r=>{if(r.shift_date)dateSet.add(r.shift_date);peopleSet.add(r.person);});
   const dates=[...dateSet].sort();
   const people=[...peopleSet].sort();
 
-  // Build lookup: date -> person -> {lines,orders,weight_kg}
+  // Build lookup
   const lookup={};
-  rows.forEach(r=>{
+  filteredRows.forEach(r=>{
     if(!r.shift_date)return;
     if(!lookup[r.shift_date])lookup[r.shift_date]={};
-    if(!lookup[r.shift_date][r.person])lookup[r.shift_date][r.person]={lines:0,orders:0,weight_kg:0};
+    if(!lookup[r.shift_date][r.person])lookup[r.shift_date][r.person]={lines:0,orders:0,weight_kg:0,shift:r.shift};
     lookup[r.shift_date][r.person].lines+=+r.lines||0;
     lookup[r.shift_date][r.person].orders+=+r.orders||0;
     lookup[r.shift_date][r.person].weight_kg+=+r.weight_kg||0;
   });
 
-  // Daily totals for bar chart
-  const nightTotals={};
-  const dayTotals={};
-  rows.forEach(r=>{
-    if(!r.shift_date)return;
-    const v=+r[metric]||0;
-    if(r.shift==='Night'){nightTotals[r.shift_date]=(nightTotals[r.shift_date]||0)+v;}
-    else{dayTotals[r.shift_date]=(dayTotals[r.shift_date]||0)+v;}
+  // Team daily averages per head per shift
+  // Night team = people classified Night, Day team = people classified Day
+  const nightPeople=people.filter(p=>classification[p]?.cls==='Night');
+  const dayPeople=people.filter(p=>classification[p]?.cls==='Day');
+
+  const teamDaily={lines:{night:[],day:[]},orders:{night:[],day:[]},weight_kg:{night:[],day:[]}};
+  dates.forEach(d=>{
+    ['lines','orders','weight_kg'].forEach(m=>{
+      const nVals=nightPeople.map(p=>lookup[d]?.[p]?.[m]||0).filter(v=>v>0);
+      const dVals=dayPeople.map(p=>lookup[d]?.[p]?.[m]||0).filter(v=>v>0);
+      teamDaily[m].night.push(nVals.length>0?Math.round(nVals.reduce((a,b)=>a+b,0)/nVals.length):null);
+      teamDaily[m].day.push(dVals.length>0?Math.round(dVals.reduce((a,b)=>a+b,0)/dVals.length):null);
+    });
   });
 
-  // Person totals for sparkline table
+  // Daily totals
+  const nightTotals={};const dayTotals={};const combinedTotals={};
+  filteredRows.forEach(r=>{
+    if(!r.shift_date)return;
+    const v=+r[metric]||0;
+    combinedTotals[r.shift_date]=(combinedTotals[r.shift_date]||0)+v;
+    if(r.shift==='Night')nightTotals[r.shift_date]=(nightTotals[r.shift_date]||0)+v;
+    else dayTotals[r.shift_date]=(dayTotals[r.shift_date]||0)+v;
+  });
+
+  // Person totals
   const personTotals={};
   people.forEach(p=>{
     personTotals[p]={total:0,days:0,daily:[]};
@@ -175,119 +207,185 @@ function render(rows){
       personTotals[p].daily.push(v);
     });
   });
-  const sortedPeople=people.sort((a,b)=>personTotals[b].total-personTotals[a].total);
+  const sortedPeople=[...people].sort((a,b)=>personTotals[b].total-personTotals[a].total);
 
-  // Determine if we should aggregate to weekly (>45 days)
-  const dayCount=dates.length;
-  let displayDates=dates;
-  let displayNight=dates.map(d=>nightTotals[d]||0);
-  let displayDay=dates.map(d=>dayTotals[d]||0);
+  // Aggregate to weekly if >45 days
   let heatDates=dates;
-
-  if(dayCount>45){
-    // Aggregate to weekly
+  let displayDates=dates;
+  if(dates.length>45){
     const weeks={};
     dates.forEach(d=>{
-      const dt=new Date(d);
-      const day=dt.getDay();
+      const dt=new Date(d);const day=dt.getDay();
       const diff=dt.getDate()-(day===0?6:day-1);
-      const mon=new Date(dt.setDate(diff)).toISOString().slice(0,10);
-      if(!weeks[mon])weeks[mon]={night:0,day:0};
-      weeks[mon].night+=(nightTotals[d]||0);
-      weeks[mon].day+=(dayTotals[d]||0);
+      const mon=new Date(new Date(d).setDate(new Date(d).getDate()-(day===0?6:day-1))).toISOString().slice(0,10);
+      if(!weeks[mon])weeks[mon]=true;
     });
     displayDates=Object.keys(weeks).sort();
-    displayNight=displayDates.map(w=>weeks[w].night);
-    displayDay=displayDates.map(w=>weeks[w].day);
     heatDates=displayDates;
   }
 
-  // Short date labels
-  const shortDates=displayDates.map(d=>{
-    const dt=new Date(d+'T12:00:00');
-    return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-  });
-
+  const shortDates=displayDates.map(d=>new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'}));
   const mLabel=metricLabel[metric];
+  const mUnit=metricUnit[metric];
   const personLabel=sub==='picking'?'Picker':'Packer';
 
   let html='';
 
-  // 1. Daily totals bar chart
-  html+='<div class="chart-panel"><div class="chart-panel-title">Daily '+mLabel+' - Night vs Day</div><div class="chart-wrap"><canvas id="chartDaily"></canvas></div></div>';
+  // CLASSIFICATION NOTICE
+  html+='<div class="class-notice"><strong>Shift Classification Definition</strong>';
+  html+='Each '+personLabel.toLowerCase()+' is automatically classified based on their last 90 days of activity. ';
+  html+='<span class="badge badge-night">N Night</span> = 85%+ of sessions between 20:00-06:00. ';
+  html+='<span class="badge badge-day">D Day</span> = 85%+ of sessions between 06:00-20:00. ';
+  html+='<span class="badge badge-both">B Both</span> = neither threshold met. ';
+  html+='When the Night or Day shift filter is selected, only classified operatives for that shift are shown.</div>';
 
-  // 2. Heatmap
-  html+='<div class="heatmap-wrap"><div class="heatmap-title">'+personLabel+' Daily '+mLabel+' Heatmap</div><div id="heatmapDiv"></div></div>';
+  // TEAM COMPARISON - 3 line charts
+  html+='<div class="section-title">Team Comparison <span>avg '+mUnit+' per head per shift day, night team vs day team</span></div>';
+  html+='<div class="team-grid">';
+  ['lines','orders','weight_kg'].forEach(m=>{
+    html+='<div class="chart-panel"><div class="chart-panel-title">'+metricLabel[m]+' per Head per Shift</div>';
+    html+='<div class="chart-panel-sub">Night team avg vs Day team avg — only on days each team worked</div>';
+    html+='<div class="chart-wrap"><canvas id="teamChart_'+m+'"></canvas></div></div>';
+  });
+  html+='</div>';
 
-  // 3. Sparkline table
-  html+='<div class="section-title">'+personLabel+' Summary <span>total '+mLabel.toLowerCase()+', avg per day worked, trend</span></div>';
-  html+='<div class="table-wrap"><table><thead><tr><th>'+personLabel+'</th><th class="num">Total</th><th class="num">Avg/Day</th><th class="num">Days Worked</th><th>Trend</th></tr></thead><tbody>';
+  // DAILY TOTALS - combined bar + night line + day line
+  html+='<div class="chart-panel"><div class="chart-panel-title">Daily '+mLabel+' — Total Volume with Night/Day Split</div>';
+  html+='<div class="chart-panel-sub">Grey bars = combined total. Lines show night shift (navy) vs day shift (lime) separately.</div>';
+  html+='<div class="chart-wrap-lg" style="height:300px"><canvas id="chartDaily"></canvas></div></div>';
+
+  // HEATMAP
+  html+='<div class="heatmap-wrap"><div class="heatmap-title">'+personLabel+' Daily '+mLabel+' Heatmap</div>';
+  html+='<div class="heatmap-sub">Colour intensity is relative to team average for that day. Darker = above average. Grey = absent.</div>';
+  html+='<div id="heatmapDiv"></div></div>';
+
+  // SPARKLINE TABLE
+  html+='<div class="section-title">'+personLabel+' Summary <span>sorted by total '+mUnit+'</span></div>';
+  html+='<div class="table-wrap"><table><thead><tr>';
+  html+='<th>'+personLabel+'</th><th>Shift</th><th class="num">Total</th><th class="num">Avg/Day</th><th class="num">Days</th><th class="num">% Night</th><th>Trend</th>';
+  html+='</tr></thead><tbody>';
   sortedPeople.forEach(p=>{
     const pt=personTotals[p];
     const avg=pt.days>0?Math.round(pt.total/pt.days):0;
-    html+='<tr><td>'+p+'</td><td class="num">'+fmt(pt.total)+'</td><td class="num">'+fmt(avg)+'</td><td class="num">'+pt.days+'</td><td class="sparkline-cell"><canvas id="spark_'+p.replace(/[^a-z0-9]/gi,'_')+'" width="120" height="32"></canvas></td></tr>';
+    const cls=classification[p]?.cls||'--';
+    const pctN=classification[p]?.pct_night||0;
+    const badgeCls=cls==='Night'?'badge-night':cls==='Day'?'badge-day':'badge-both';
+    const badgeLbl=cls==='Night'?'N Night':cls==='Day'?'D Day':'B Both';
+    html+='<tr>';
+    html+='<td>'+p+'</td>';
+    html+='<td><span class="badge '+badgeCls+'">'+badgeLbl+'</span></td>';
+    html+='<td class="num">'+fmt(pt.total)+'</td>';
+    html+='<td class="num">'+fmt(avg)+'</td>';
+    html+='<td class="num">'+pt.days+'</td>';
+    html+='<td class="num">'+pctN+'%</td>';
+    html+='<td><canvas id="spark_'+p.replace(/[^a-z0-9]/gi,'_')+'" width="120" height="28"></canvas></td>';
+    html+='</tr>';
   });
   html+='</tbody></table></div>';
 
   document.getElementById('mainContent').innerHTML=html;
 
-  // Build daily chart
-  if(dailyChart)dailyChart.destroy();
-  dailyChart=new Chart(document.getElementById('chartDaily'),{
+  // BUILD TEAM COMPARISON CHARTS
+  ['lines','orders','weight_kg'].forEach(m=>{
+    const canvas=document.getElementById('teamChart_'+m);
+    if(!canvas)return;
+    if(chartInstances['team_'+m])chartInstances['team_'+m].destroy();
+    chartInstances['team_'+m]=new Chart(canvas,{
+      type:'line',
+      data:{
+        labels:shortDates,
+        datasets:[
+          {label:'Night avg/head',data:teamDaily[m].night,borderColor:'#1B365D',backgroundColor:'rgba(27,54,93,0.1)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#1B365D',tension:0.3,spanGaps:true},
+          {label:'Day avg/head',data:teamDaily[m].day,borderColor:'#9ACD00',backgroundColor:'rgba(154,205,0,0.1)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#9ACD00',tension:0.3,spanGaps:true}
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{font:{family:'Barlow',size:10},boxWidth:8}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{family:'Barlow',size:9},maxRotation:45}},
+          y:{grid:{color:'#f0f0f0'},border:{display:false},ticks:{font:{family:'Barlow',size:10}},beginAtZero:true}
+        }
+      }
+    });
+  });
+
+  // BUILD DAILY TOTALS CHART - bar + 2 lines
+  const combinedArr=displayDates.map(d=>combinedTotals[d]||0);
+  const nightArr=displayDates.map(d=>nightTotals[d]||0);
+  const dayArr=displayDates.map(d=>dayTotals[d]||0);
+  if(chartInstances.daily)chartInstances.daily.destroy();
+  chartInstances.daily=new Chart(document.getElementById('chartDaily'),{
     type:'bar',
-    data:{labels:shortDates,datasets:[
-      {label:'Night',data:displayNight,backgroundColor:'#1B365D'},
-      {label:'Day',data:displayDay,backgroundColor:'#9ACD00'}
-    ]},
+    data:{
+      labels:shortDates,
+      datasets:[
+        {type:'bar',label:'Total',data:combinedArr,backgroundColor:'rgba(200,200,200,0.4)',borderColor:'rgba(180,180,180,0.6)',borderWidth:1,order:3},
+        {type:'line',label:'Night',data:nightArr,borderColor:'#1B365D',backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#1B365D',tension:0.3,order:1},
+        {type:'line',label:'Day',data:dayArr,borderColor:'#9ACD00',backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#9ACD00',tension:0.3,order:2}
+      ]
+    },
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{position:'bottom',labels:{font:{family:'Barlow',size:11},boxWidth:10}}},
       scales:{
-        x:{stacked:true,grid:{display:false},ticks:{font:{family:'Barlow',size:9},maxRotation:45}},
-        y:{stacked:true,grid:{color:'#f0f0f0'},border:{display:false},ticks:{font:{family:'Barlow',size:10}}}
+        x:{grid:{display:false},ticks:{font:{family:'Barlow',size:9},maxRotation:45}},
+        y:{grid:{color:'#f0f0f0'},border:{display:false},ticks:{font:{family:'Barlow',size:10}},beginAtZero:true}
       }
     }
   });
 
-  // Build heatmap
-  const maxVal=Math.max(...sortedPeople.flatMap(p=>heatDates.map(d=>lookup[d]?.[p]?.[metric]||0)));
+  // BUILD HEATMAP - team-relative colour scale
   const cols=heatDates.length;
-  const cellW=Math.max(20,Math.min(40,Math.floor((window.innerWidth-320)/cols)));
-  const labelW=120;
+  const cellW=Math.max(18,Math.min(40,Math.floor((window.innerWidth-320)/cols)));
+  const labelW=140;
+
+  // Team average per day
+  const teamAvgPerDay={};
+  heatDates.forEach(d=>{
+    const vals=sortedPeople.map(p=>lookup[d]?.[p]?.[metric]||0).filter(v=>v>0);
+    teamAvgPerDay[d]=vals.length>0?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+  });
 
   let hmHtml='<div style="display:grid;grid-template-columns:'+labelW+'px repeat('+cols+','+cellW+'px);gap:2px;min-width:'+(labelW+cols*(cellW+2))+'px">';
-  // Header row - dates
   hmHtml+='<div></div>';
   heatDates.forEach(d=>{
-    const dt=new Date(d+'T12:00:00');
-    const lbl=dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+    const lbl=new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
     hmHtml+='<div style="height:40px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px"><span style="font-family:Barlow Condensed,sans-serif;font-size:9px;color:#999;writing-mode:vertical-rl;transform:rotate(180deg)">'+lbl+'</span></div>';
   });
-  // Data rows
   sortedPeople.forEach(p=>{
-    hmHtml+='<div style="font-family:Barlow,sans-serif;font-size:11px;color:#666;display:flex;align-items:center;height:24px;padding-right:8px;overflow:hidden;white-space:nowrap">'+p+'</div>';
+    const cls=classification[p]?.cls||'--';
+    const badgeCls=cls==='Night'?'badge-night':cls==='Day'?'badge-day':'badge-both';
+    const badgeLbl=cls==='Night'?'N':cls==='Day'?'D':'B';
+    hmHtml+='<div style="font-family:Barlow,sans-serif;font-size:11px;color:#555;display:flex;align-items:center;height:24px;padding-right:6px;overflow:hidden;white-space:nowrap">'+p+'<span class="badge '+badgeCls+'" style="font-size:9px;padding:1px 4px;margin-left:4px">'+badgeLbl+'</span></div>';
     heatDates.forEach(d=>{
       const v=lookup[d]?.[p]?.[metric]||0;
-      const intensity=maxVal>0?v/maxVal:0;
-      const alpha=v===0?0:0.1+intensity*0.9;
-      const bg=v===0?'#f5f5f3':'rgba(27,54,93,'+alpha.toFixed(2)+')';
-      const txtCol=intensity>0.5?'rgba(255,255,255,0.9)':'transparent';
-      const title=p+' '+d+': '+fmt(v)+' '+metric;
+      const avg=teamAvgPerDay[d]||1;
+      const ratio=v>0?v/avg:0;
+      // colour: below avg = lighter, above avg = darker navy
+      let bg='#f5f5f3';
+      if(v>0){
+        const intensity=Math.min(1,ratio/2); // ratio of 2 = max dark
+        const alpha=0.15+intensity*0.85;
+        bg='rgba(27,54,93,'+alpha.toFixed(2)+')';
+      }
+      const txtCol=v>0&&ratio>0.8?'rgba(255,255,255,0.9)':'transparent';
+      const title=p+' '+d+': '+fmt(v)+' (team avg: '+fmt(Math.round(avg))+')';
       hmHtml+='<div style="height:24px;border-radius:2px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:9px;font-family:Barlow Condensed,sans-serif;font-weight:700;color:'+txtCol+'" title="'+title+'">'+(v>0&&cellW>25?fmt(v):'')+'</div>';
     });
   });
   hmHtml+='</div>';
   document.getElementById('heatmapDiv').innerHTML=hmHtml;
 
-  // Build sparklines
+  // BUILD SPARKLINES
   sortedPeople.forEach(p=>{
-    const canvasId='spark_'+p.replace(/[^a-z0-9]/gi,'_');
-    const canvas=document.getElementById(canvasId);
+    const id='spark_'+p.replace(/[^a-z0-9]/gi,'_');
+    const canvas=document.getElementById(id);
     if(!canvas)return;
+    if(chartInstances[id])chartInstances[id].destroy();
     const vals=personTotals[p].daily;
-    if(sparkCharts[canvasId])sparkCharts[canvasId].destroy();
-    sparkCharts[canvasId]=new Chart(canvas,{
-      type:'bar',
-      data:{labels:dates,datasets:[{data:vals,backgroundColor:'#1B365D',borderWidth:0}]},
+    const avg=vals.filter(v=>v>0).reduce((a,b)=>a+b,0)/(vals.filter(v=>v>0).length||1);
+    chartInstances[id]=new Chart(canvas,{
+      type:'line',
+      data:{labels:dates,datasets:[{data:vals,borderColor:'#1B365D',backgroundColor:'rgba(27,54,93,0.08)',borderWidth:1.5,pointRadius:0,tension:0.3,fill:true}]},
       options:{responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}},
         scales:{x:{display:false},y:{display:false,beginAtZero:true}}}
     });
