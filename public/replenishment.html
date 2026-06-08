@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixmart - Replenishment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--lime:#9ACD00;--navy:#1B365D;--black:#1a1a1a;--white:#fff;--offwhite:#f5f5f3;--border:#e0e0e0;--muted:#666;--red:#dc2626;--amber:#d97706;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Barlow',sans-serif;background:var(--offwhite);color:var(--black);}
+  .topbar{background:var(--black);height:52px;display:flex;align-items:center;padding:0 24px;gap:24px;}
+  .topbar-brand{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--white);text-transform:uppercase;letter-spacing:0.05em;}
+  .topbar-brand span{color:var(--lime);}
+  .topbar-nav{display:flex;gap:4px;margin-left:24px;}
+  .nav-link{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:6px 14px;border-radius:3px;}
+  .nav-link:hover{color:var(--white);background:rgba(255,255,255,0.08);}
+  .nav-link.active{color:var(--black);background:var(--lime);}
+  .topbar-right{margin-left:auto;}
+  .logout-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;text-decoration:none;padding:5px 12px;border:1px solid #444;border-radius:3px;}
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 24px 0;}
+  .kpi-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--lime);padding:14px 16px;}
+  .kpi-card.alert{border-top-color:var(--red);}
+  .kpi-card.amber{border-top-color:var(--amber);}
+  .kpi-card.navy{border-top-color:var(--navy);}
+  .kpi-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;line-height:1;}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+  .controls{display:flex;align-items:center;gap:8px;padding:18px 24px 0;flex-wrap:wrap;}
+  .filter-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--white);border:1px solid var(--border);padding:6px 14px;border-radius:3px;cursor:pointer;}
+  .filter-btn.active{color:var(--white);background:var(--navy);border-color:var(--navy);}
+  .controls-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+  .toggle-label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .search-box{font-family:'Barlow',sans-serif;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:3px;width:220px;}
+  .content{padding:16px 24px 32px;}
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin:8px 0 10px;}
+  .section-title span{color:var(--muted);font-weight:600;font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0;}
+  .table-wrap{background:var(--white);border:1px solid var(--border);overflow:auto;margin-bottom:16px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:9px 12px;text-align:left;border-bottom:2px solid var(--border);background:var(--offwhite);white-space:nowrap;}
+  th.num{text-align:right;}
+  td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#fafafa;}
+  tr.row-out td{background:#fef9f9;}
+  tr.row-below td{background:#fffdf0;}
+  .stock-low{color:var(--red);font-weight:600;}
+  .free-short{color:var(--amber);font-weight:600;}
+  .status-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:var(--offwhite);color:var(--muted);}
+  .status-badge.out{background:#fde8e8;color:var(--red);}
+  .status-badge.below{background:#fef3e2;color:var(--amber);}
+  .status-badge.over{background:#eef4ff;color:var(--navy);}
+  .status-badge.ok{background:#eef7e0;color:#5a7d00;}
+  .loading{text-align:center;padding:40px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+  .error-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:14px 18px;font-size:13px;margin:16px 24px;border-radius:3px;display:none;}
+  .note{font-size:11px;color:var(--muted);padding:0 24px;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-brand">Fixmart <span>Nights</span></div>
+  <nav class="topbar-nav">
+    <a href="/" class="nav-link">Picking</a>
+    <a href="/packing.html" class="nav-link">Packing</a>
+    <a href="/goodsin.html" class="nav-link">Goods In</a>
+    <a href="/replenishment.html" class="nav-link active">Replenishment</a>
+    <a href="/trends.html" class="nav-link">Trends</a>
+  </nav>
+  <div class="topbar-right"><a href="/logout" class="logout-btn">Sign Out</a></div>
+</div>
+
+<div class="error-box" id="errorBox"></div>
+
+<!-- KPI STRIP / ACTION SUMMARY -->
+<div class="kpi-strip">
+  <div class="kpi-card alert">
+    <div class="kpi-label">Out of Stock</div>
+    <div class="kpi-value" id="kpiOut">--</div>
+    <div class="kpi-sub">on replenishment, zero stock</div>
+  </div>
+  <div class="kpi-card amber">
+    <div class="kpi-label">Below Minimum</div>
+    <div class="kpi-value" id="kpiBelow">--</div>
+    <div class="kpi-sub">stock under bin min</div>
+  </div>
+  <div class="kpi-card navy">
+    <div class="kpi-label">On Replenishment</div>
+    <div class="kpi-value" id="kpiOnRep">--</div>
+    <div class="kpi-sub">SKUs with a min set</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Suggested Units</div>
+    <div class="kpi-value" id="kpiUnits">--</div>
+    <div class="kpi-sub">to bring up to max</div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="filter-btn active" data-filter="ALL">All</button>
+  <button class="filter-btn" data-filter="OUT OF STOCK">Out of Stock</button>
+  <button class="filter-btn" data-filter="BELOW MIN">Below Min</button>
+  <button class="filter-btn" data-filter="OVERSTOCKED">Overstocked</button>
+  <button class="filter-btn" data-filter="OK">OK</button>
+  <div class="controls-right">
+    <input type="text" class="search-box" id="search" placeholder="Search SKU or description...">
+    <label class="toggle-label"><input type="checkbox" id="showAll"> Show all SKUs (incl. no level set)</label>
+  </div>
+</div>
+<div class="note" id="scopeNote"></div>
+
+<div class="content">
+  <div class="section-title">Replenishment <span id="tableMeta"></span></div>
+  <div id="tableWrap" class="table-wrap"><div class="loading">Loading...</div></div>
+</div>
+
+<script>
+const fmt = n => n == null ? '--' : Number(n).toLocaleString('en-GB', { maximumFractionDigits: 0 });
+let allRows = [];
+let activeFilter = 'ALL';
+let showAll = false;
+
+function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = msg; b.style.display = 'block'; }
+
+const badgeClass = s => s === 'OUT OF STOCK' ? 'out' : s === 'BELOW MIN' ? 'below' : s === 'OVERSTOCKED' ? 'over' : s === 'OK' ? 'ok' : '';
+
+function renderKpis() {
+  const out = allRows.filter(r => r.replen_status === 'OUT OF STOCK').length;
+  const below = allRows.filter(r => r.replen_status === 'BELOW MIN').length;
+  const onRep = allRows.filter(r => r.on_replenishment).length;
+  const units = allRows.reduce((s, r) => s + (+r.suggested_replen_qty || 0), 0);
+  document.getElementById('kpiOut').textContent = fmt(out);
+  document.getElementById('kpiBelow').textContent = fmt(below);
+  document.getElementById('kpiOnRep').textContent = fmt(onRep);
+  document.getElementById('kpiUnits').textContent = fmt(units);
+}
+
+function renderTable() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  let rows = allRows;
+  if (activeFilter !== 'ALL') rows = rows.filter(r => r.replen_status === activeFilter);
+  if (q) rows = rows.filter(r => (r.sku || '').toLowerCase().includes(q) || (r.description || '').toLowerCase().includes(q));
+
+  document.getElementById('tableMeta').textContent =
+    rows.length + ' of ' + allRows.length + ' rows' + (showAll ? ' (all SKUs)' : ' (on replenishment only)');
+
+  if (rows.length === 0) {
+    document.getElementById('tableWrap').innerHTML = '<div class="loading">No rows match</div>';
+    return;
+  }
+
+  let h = '<table><thead><tr>' +
+    '<th>SKU</th><th>Description</th>' +
+    '<th class="num">Overall</th><th class="num">Free</th><th class="num">On Order</th>' +
+    '<th class="num">Min</th><th class="num">Max</th>' +
+    '<th class="num">Suggested</th><th>Status</th>' +
+    '</tr></thead><tbody>';
+  rows.forEach(r => {
+    const rc = r.replen_status === 'OUT OF STOCK' ? 'row-out' : r.replen_status === 'BELOW MIN' ? 'row-below' : '';
+    const overallCls = (r.replen_min > 0 && r.current_stock < r.replen_min) ? 'num stock-low' : 'num';
+    const freeCls = (r.replen_min > 0 && r.free_stock < r.replen_min) ? 'num free-short' : 'num';
+    h += '<tr class="' + rc + '">';
+    h += '<td>' + (r.sku || '') + '</td>';
+    h += '<td>' + (r.description || '') + '</td>';
+    h += '<td class="' + overallCls + '">' + fmt(r.current_stock) + '</td>';
+    h += '<td class="' + freeCls + '">' + fmt(r.free_stock) + '</td>';
+    h += '<td class="num">' + fmt(r.on_order) + '</td>';
+    h += '<td class="num">' + fmt(r.replen_min) + '</td>';
+    h += '<td class="num">' + fmt(r.replen_max) + '</td>';
+    h += '<td class="num">' + (r.suggested_replen_qty > 0 ? fmt(r.suggested_replen_qty) : '') + '</td>';
+    h += '<td><span class="status-badge ' + badgeClass(r.replen_status) + '">' + r.replen_status + '</span></td>';
+    h += '</tr>';
+  });
+  document.getElementById('tableWrap').innerHTML = h + '</tbody></table>';
+}
+
+async function load() {
+  document.getElementById('tableWrap').innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    const j = await (await fetch('/api/replenishment' + (showAll ? '?all=1' : ''))).json();
+    if (!j.success) throw new Error(j.error);
+    allRows = j.data;
+    document.getElementById('scopeNote').textContent =
+      'Location: 1 - Main Stock. Replenishment min/max from default bin. RAG on overall stock to match the OrderWise report. Discontinued items excluded.';
+    renderKpis();
+    renderTable();
+  } catch (e) { showError('Error: ' + e.message); }
+}
+
+document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  activeFilter = b.dataset.filter;
+  renderTable();
+}));
+document.getElementById('search').addEventListener('input', renderTable);
+document.getElementById('showAll').addEventListener('change', e => { showAll = e.target.checked; load(); });
+
+load();
+</script>
+</body>
+</html>
