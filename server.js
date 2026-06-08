@@ -439,4 +439,47 @@ app.get('/api/goodsin-outstanding', async (req, res) => {
   }
 });
 
+// REPLENISHMENT
+// Replicates Kyle's OrderWise "Default Bin & Stock Report - Replenishment".
+// Location 2 = "1 - Main Stock". Replenishment min/max = default-bin min/max.
+// CurrentStockQuantity = overall stock. RAG driven off overall stock to match the report.
+// Discontinued/non-stock/service items excluded by design (the view filters them),
+// so row count is slightly below the OrderWise report which still lists discontinued SKUs.
+app.get('/api/replenishment', async (req, res) => {
+  const showAll = req.query.all === '1';
+  const cacheKey = 'replenishment_' + (showAll ? 'all' : 'onrep');
+  const cached = cache.get(cacheKey);
+  if (cached) return res.json({ success: true, data: cached, cached: true });
+
+  const lines = [
+    'SELECT',
+    '  vad_variant_code AS sku,',
+    '  vad_description AS description,',
+    '  current_stock,',
+    '  free_stock,',
+    '  on_order,',
+    '  replen_min,',
+    '  replen_max,',
+    '  suggested_replen_qty,',
+    '  replen_status,',
+    '  on_replenishment',
+    'FROM `' + P + '.fixmart_bi.vw_replenishment`',
+    showAll ? '' : 'WHERE on_replenishment = TRUE',
+    'ORDER BY',
+    "  CASE replen_status WHEN 'OUT OF STOCK' THEN 1 WHEN 'BELOW MIN' THEN 2 WHEN 'OVERSTOCKED' THEN 3 WHEN 'OK' THEN 4 ELSE 5 END,",
+    '  suggested_replen_qty DESC,',
+    '  sku'
+  ];
+
+  try {
+    const [rows] = await bigquery.query({ query: lines.join('\n'), location: LOC });
+    cache.set(cacheKey, rows);
+    res.json({ success: true, data: rows, cached: false });
+  } catch (err) {
+    console.error('Replenishment error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 app.listen(PORT, () => console.log('Fixmart Nights Dashboard running on port ' + PORT));
