@@ -1,7 +1,8 @@
 // Fixmart Nights Dashboard - Cloud Run Server
+// No login: anyone with the URL can view. Same as the stock and
+// failed-deliveries dashboards.
 
 const express = require('express');
-const session = require('express-session');
 const { BigQuery } = require('@google-cloud/bigquery');
 const NodeCache = require('node-cache');
 const path = require('path');
@@ -10,14 +11,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1);
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'fixmart-nights-2026',
-  resave: true,
-  saveUninitialized: false,
-  cookie: { maxAge: 12 * 60 * 60 * 1000, secure: false, sameSite: 'lax' }
-}));
-
-const USERS = { warehouse: { password: 'warehouse' } };
 
 const PORT = process.env.PORT || 8080;
 const PROJECT_ID = process.env.BQ_PROJECT_ID || 'project-aa7ee149-5e29-4eb4-8bc';
@@ -27,30 +20,10 @@ const LOC = 'europe-west2';
 const bigquery = new BigQuery({ projectId: PROJECT_ID });
 const cache = new NodeCache({ stdTTL: 300 });
 
-app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = USERS[username];
-  if (user && user.password === password) {
-    req.session.user = username;
-    req.session.save(err => res.redirect('/'));
-  } else {
-    res.redirect('/login.html?error=1');
-  }
-});
-
-app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/login.html'); });
-
-function requireAuth(req, res, next) {
-  if (req.session && req.session.user) return next();
-  res.redirect('/login.html');
-}
-
-app.use((req, res, next) => {
-  if (req.path === '/login.html' || req.path === '/login') return next();
-  requireAuth(req, res, next);
-});
+// Old login paths kept as redirects so bookmarks do not 404.
+app.get('/login.html', (req, res) => res.redirect('/'));
+app.post('/login', (req, res) => res.redirect('/'));
+app.get('/logout', (req, res) => res.redirect('/'));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
